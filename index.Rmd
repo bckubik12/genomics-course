@@ -13,6 +13,10 @@ knitr::opts_chunk$set(echo = TRUE)
 
 [Lab1- Intro to R and reproducible research](Lab1_BrianaKubik.html)
 
+[Lab3A- Starting with the data](Lab3A_BrianaKubik.html)
+
+[Lab3B- Manipulating, analyzing and exporting data with tidyverse](Lab3B_BrianaKubik.html)
+
 Application written in R [@RCoreTeam] using the Shiny framework [@Chang2015].
 
 # References
