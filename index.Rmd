@@ -18,4 +18,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 [Lab3B- Manipulating, analyzing and exporting data with tidyverse](Lab3B_BrianaKubik.html)
 
+[Lab4- Data wrangling and graphing COVID-19 reporting data](Lab4_BrianaKubik.html)
+
+[Lab4a- Data Visualization with ggplot2 (1)](Lab4a_BrianaKubik.html)
+
 

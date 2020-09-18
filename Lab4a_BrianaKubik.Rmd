@@ -1,0 +1,161 @@
+---
+title: "Lab 4a- Data Visualization with ggplot2 (1)"
+author: "Briana Kubik"
+date: "9/14/2020"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r warning = FALSE}
+library(tidyverse)
+```
+
+```{r}
+surveys_complete = read_csv("data/surveys_complete.csv")
+```
+
+# Plotting with **`ggplot2`**
+
+**`ggplot2`** makes it easier to make complex graphs from data in a data frame. It helps to minimize the changes you need to make to your data in order to format publication quality graphs. Functions in **`ggplot2`** like data in the 'long' format (a column for every dimension and a row for every observation). The graphics built using this package are done in a series of steps allowing for maximum customization. 
+
+A general template is:
+
+`ggplot(data = <DATA>, mapping = aes(<MAPPINGS>)) + <GEOM_FUNCTION>()`
+
+* The `data =` allows you to bind your data 
+* The `aes()` function specifies the variables to be plotted and how they will be presented in the graph(x/y positions, size, shape, color, etc.)
+* The `geoms` portion specifies how the data will be plotted. Some common ones are: `geom_point()` for scatter and dot plots, `geom_boxplot()` for boxplots, and `geom_line()` for trend lines and time series.
+
+```{r}
+ggplot(data = surveys_complete, mapping = aes(x = weight, y = hindfoot_length)) +
+  geom_point()
+```
+
+The `+` functionality in **`ggplot2`** is particularly useful tomodify templates and explore various plotting types.
+
+```{r}
+surveys_plot = ggplot(data = surveys_complete, mapping = aes(x = weight, y = hindfoot_length))
+
+surveys_plot +
+  geom_point()
+```
+
+### Challenge 1
+
+Scatter plots can be useful exploratory tools for small datasets. For data sets with large numbers of observations, such as the `surveys_complete` data set, overplotting of points can be a limitation of scatter plots. One strategy for handling such settings is to use hexagonal binning of observations. The plot space is tessellated into hexagons. Each hexagon is assigned a color based on the number of observations that fall within its boundaries. To use hexagonal binning with `ggplot2`, first install the R package `hexbin` from CRAN:
+
+```{r warning = FALSE}
+#install.packages("hexbin")
+library(hexbin)
+```
+
+Then use the `geom_hex()` function:
+
+```{r}
+surveys_plot +
+  geom_hex()
+```
+
+What are the relative strengths and weaknesses of a hexagonal bin plot compared to a scatter plot? Examine the above scatter plot and compare it with the hexagonal bin plot that you created.
+
+**By using the hexagonal bin plot, you avoid overplotting data with a high number of observations. However, you also have to compromise specificity of the data points.**
+
+# Building your plots iteratively
+
+Usually, building plots in **`ggplot2`** is an iterative process built using many steps. First, we specify a dataset, the axes, and a geom. `alpha` can be used to increase transparency. We can add colors.
+
+```{r}
+ggplot(data = surveys_complete, aes(x = weight, y = hindfoot_length)) +
+    geom_point(alpha = 0.1, color = "blue")
+```
+
+We can also segment the data by species to extract more information from the one visualization.
+
+```{r}
+ggplot(data = surveys_complete, mapping = aes(x = weight, y = hindfoot_length)) +
+    geom_point(alpha = 0.1, aes(color = species_id))
+```
+
+### Challenge 2
+
+Use what you just learned to create a scatter plot of `weight` over `species_id` with the plot types showing in different colors. Is this a good way to show this type of data?
+
+```{r}
+ggplot(data = surveys_complete, mapping = aes(x = species_id, y = weight)) +
+  geom_point(aes(color = plot_type))
+```
+
+**This does not seem like a very good way to represent the data because there is no useful information to be extranpolated from it. The x variable is categorical so using a scatter plot is not ideal.**
+
+# Boxplot
+
+Boxplots can be used to visualize distributions.
+
+```{r}
+ggplot(data = surveys_complete, mapping = aes(x = species_id, y = weight)) +
+  geom_boxplot()
+```
+
+We can add to the boxplot to specify more about the data.
+
+```{r}
+ggplot(data = surveys_complete, mapping = aes(x = species_id, y = weight)) +
+    geom_boxplot(alpha = 0) +
+    geom_jitter(alpha = 0.3, color = "tomato")
+```
+
+The jitter layer appears in front of the boxplot layer. To switch them simply change the order that they are applied onto the plot.
+
+```{r}
+ggplot(data = surveys_complete, mapping = aes(x = species_id, y = weight)) +
+    geom_jitter(alpha = 0.3, color = "tomato") +
+    geom_boxplot(alpha = 0) 
+```
+
+### Challenge 3
+
+Boxplots are useful summaries, but hide the *shape* of the distribution. For example, if there is a bimodal distribution, it would not be observed with a boxplot. An alternative to the boxplot is the violin plot (sometimes known as a beanplot), where the shape (of the density of points) is drawn.
+
+Replace the box plot with a violin plot; see `geom_violin()`.
+
+```{r}
+ggplot(data = surveys_complete, mapping = aes(x = species_id, y = weight)) +
+    geom_violin() 
+```
+
+In many types of data, it is important to consider the *scale* of the observations. For example, it may be worth changing the scale of the axis to better distribute the observations in the space of the plot. Changing the scale of the axes is done similarly to adding/modifying other components (i.e., by incrementally adding commands). Try making these modifications:
+
+* Represent weight on the $log_10$ scale; see `scale_y_log10()`.
+
+```{r}
+ggplot(data = surveys_complete, mapping = aes(x = species_id, y = weight)) +
+    geom_violin() +
+    scale_y_log10()
+```
+
+So far, we’ve looked at the distribution of weight within species. Try making a new plot to explore the distribution of another variable within each species.
+
+* Create boxplot for `hindfoot_length`. Overlay the boxplot layer on a jitter layer to show actual measurements.
+
+```{r}
+ggplot(data = surveys_complete, mapping = aes(x = species_id, y = hindfoot_length)) +
+  geom_jitter(alpha = 0.3) +
+  geom_boxplot()
+```
+
+* Add color to the data points on your boxplot according to the plot from which the sample was taken (`plot_id`). Hint: Check the class for `plot_id`. Consider changing the class of `plot_id` from integer to factor. Why does this change how R makes the graph?
+
+```{r}
+class(surveys_complete$plot_id)
+plot_id_factor = as_factor(surveys_complete$plot_id)
+ggplot(data = surveys_complete, mapping = aes(x = species_id, y = hindfoot_length)) +
+  geom_jitter(alpha = 0.3, aes(color = plot_id_factor)) +
+  geom_boxplot()
+```
+
+**The original class of `plot_id` is number. This causes `ggplot()` to interpret the plot_id's as a continuous variable. Instead, we want them to be categorical, so we can change the class to factor.**
