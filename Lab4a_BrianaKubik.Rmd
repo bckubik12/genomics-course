@@ -1,5 +1,5 @@
 ---
-title: "Lab 4a- Data Visualization with ggplot2 (1)"
+title: "Lab 4- Data wrangling and graphing COVID-19 reporting data (Part 1)"
 author: "Briana Kubik"
 date: "9/14/2020"
 output: html_document
@@ -11,151 +11,243 @@ editor_options:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+# Making a graph from the daily reports
+
 ```{r warning = FALSE}
 library(tidyverse)
 ```
 
-```{r}
-surveys_complete = read_csv("data/surveys_complete.csv")
-```
 
-# Plotting with **`ggplot2`**
-
-**`ggplot2`** makes it easier to make complex graphs from data in a data frame. It helps to minimize the changes you need to make to your data in order to format publication quality graphs. Functions in **`ggplot2`** like data in the 'long' format (a column for every dimension and a row for every observation). The graphics built using this package are done in a series of steps allowing for maximum customization. 
-
-A general template is:
-
-`ggplot(data = <DATA>, mapping = aes(<MAPPINGS>)) + <GEOM_FUNCTION>()`
-
-* The `data =` allows you to bind your data 
-* The `aes()` function specifies the variables to be plotted and how they will be presented in the graph(x/y positions, size, shape, color, etc.)
-* The `geoms` portion specifies how the data will be plotted. Some common ones are: `geom_point()` for scatter and dot plots, `geom_boxplot()` for boxplots, and `geom_line()` for trend lines and time series.
 
 ```{r}
-ggplot(data = surveys_complete, mapping = aes(x = weight, y = hindfoot_length)) +
-  geom_point()
+report_03_11_2020 <-   read_csv(url("https://github.com/CSSEGISandData/COVID-19/raw/master/csse_covid_19_data/csse_covid_19_daily_reports/03-11-2020.csv")) %>%
+  rename(Country_Region = "Country/Region", Province_State = "Province/State")
+str(report_03_11_2020)
+View(report_03_11_2020)
 ```
 
-The `+` functionality in **`ggplot2`** is particularly useful tomodify templates and explore various plotting types.
+# Interactive data tables
 
-```{r}
-surveys_plot = ggplot(data = surveys_complete, mapping = aes(x = weight, y = hindfoot_length))
-
-surveys_plot +
-  geom_point()
-```
-
-### Challenge 1
-
-Scatter plots can be useful exploratory tools for small datasets. For data sets with large numbers of observations, such as the `surveys_complete` data set, overplotting of points can be a limitation of scatter plots. One strategy for handling such settings is to use hexagonal binning of observations. The plot space is tessellated into hexagons. Each hexagon is assigned a color based on the number of observations that fall within its boundaries. To use hexagonal binning with `ggplot2`, first install the R package `hexbin` from CRAN:
+The **`DT`** package can be used to make interactive tables.
 
 ```{r warning = FALSE}
-#install.packages("hexbin")
-library(hexbin)
+library(DT)
+datatable(report_03_11_2020)
 ```
 
-Then use the `geom_hex()` function:
+### Exercises (Part 1)
+
+Today’s exercises involve the application of what you learned in the Data Carpentries tutorial to a new data set. This step in applying your skills is often hard at first. Take your time and reread the tutorials, then try some options.
+
+Use the DT package for showing the data tables where appropriate.
+
+1. The format of the daily reports has changed over time. What are the differences between 3/13/2020, the Friday before spring break 2020 and yesterday 6 months later on 9/13/2020? Load the files into R and use `str()` and `View()` (or in the top right corner click on Environment and then the data frame.). Note the in the more recent dates they have changed the column headers so that it is no longer necessary to rename `Province_State` and `Country_Region`.
 
 ```{r}
-surveys_plot +
-  geom_hex()
+report_03_13_2020 <-read_csv(url("https://github.com/CSSEGISandData/COVID-19/raw/master/csse_covid_19_data/csse_covid_19_daily_reports/03-13-2020.csv")) %>%
+  rename(Country_Region = "Country/Region", Province_State = "Province/State")
+str(report_03_13_2020)
+#View(report_03_13_2020)
+
+report_09_13_2020 <-  read_csv(url("https://github.com/CSSEGISandData/COVID-19/raw/master/csse_covid_19_data/csse_covid_19_daily_reports/09-13-2020.csv")) 
+str(report_09_13_2020)
+#View(report_09_13_2020)
 ```
 
-What are the relative strengths and weaknesses of a hexagonal bin plot compared to a scatter plot? Examine the above scatter plot and compare it with the hexagonal bin plot that you created.
-
-**By using the hexagonal bin plot, you avoid overplotting data with a high number of observations. However, you also have to compromise specificity of the data points.**
-
-# Building your plots iteratively
-
-Usually, building plots in **`ggplot2`** is an iterative process built using many steps. First, we specify a dataset, the axes, and a geom. `alpha` can be used to increase transparency. We can add colors.
+2. Many countries have multiple entries representing different regions (e.g. counties and states). To get the counts for a country we need to summarise the data. Use `group_by()` and `summarize()` to make a data frame (tibble) with total counts for each country.
 
 ```{r}
-ggplot(data = surveys_complete, aes(x = weight, y = hindfoot_length)) +
-    geom_point(alpha = 0.1, color = "blue")
+T_counts_3_13 = report_03_13_2020 %>% 
+  group_by(Country_Region) %>% 
+  summarize(Total_counts = n())
+
+T_counts_9_13 = report_09_13_2020 %>% 
+  group_by(Country_Region) %>% 
+  summarize(Total_counts = n())
 ```
 
-We can also segment the data by species to extract more information from the one visualization.
+3. To get counts for confirmed cases per U.S state use `filter()` to select US and `group_by` and `summarize` as above.
 
 ```{r}
-ggplot(data = surveys_complete, mapping = aes(x = weight, y = hindfoot_length)) +
-    geom_point(alpha = 0.1, aes(color = species_id))
+US_counts_3_13 = report_03_13_2020 %>% 
+  filter(Country_Region == "US") %>% 
+  group_by(Province_State) %>% 
+  summarize(US_state_confirmed = sum(Confirmed))
+
+US_counts_9_13 = report_09_13_2020 %>% 
+  filter(Country_Region == "US") %>% 
+  group_by(Province_State) %>% 
+  summarize(US_state_confirmed = sum(Confirmed))
 ```
 
-### Challenge 2
-
-Use what you just learned to create a scatter plot of `weight` over `species_id` with the plot types showing in different colors. Is this a good way to show this type of data?
+4. It will be difficult to make simple graphs with the data from all countries in the world or even the US states. Use `arrange_by()` and `slice()` to get just the top 10 countries for Deaths.
 
 ```{r}
-ggplot(data = surveys_complete, mapping = aes(x = species_id, y = weight)) +
-  geom_point(aes(color = plot_type))
+T_death_3_13 = report_03_13_2020 %>%
+  group_by(Country_Region) %>% 
+  summarize(Total_deaths = sum(Deaths)) %>% 
+  arrange(desc(Total_deaths)) %>% 
+  slice(1:10)
+
+T_death_9_13 = report_09_13_2020 %>%
+  group_by(Country_Region) %>% 
+  summarize(Total_deaths = sum(Deaths)) %>% 
+  arrange(desc(Total_deaths)) %>% 
+  slice(1:10)
 ```
 
-**This does not seem like a very good way to represent the data because there is no useful information to be extranpolated from it. The x variable is categorical so using a scatter plot is not ideal.**
+# Introduction to R Graphics
 
-# Boxplot
+Some more advanced and widely used graphing packages in R include **`grid`**, **`lattice`**, and **`ggplot2`**. We will be using **`ggplot2`** in this tutorial.
 
-Boxplots can be used to visualize distributions.
+### Installation
+
+**`tidayverse`** was installed and loaded previously so it is already in the working environment. Packages only need to be installed once and called to the workspace every time R is reopened.
+
+### Tutorials and resources
+
+Do the Data Carpentries "Data Visualization with ggplot2" tutorial in a separate file called Lab4a. 
+
+### Exercises (Part 2)
+
+1. Make plots using geom_point() of the 10 countries with the confirmed cases and deaths (two separate graphs) on 3/13/2020 and 9/13/2020.
 
 ```{r}
-ggplot(data = surveys_complete, mapping = aes(x = species_id, y = weight)) +
-  geom_boxplot()
+###Confirmed 3/2020###
+T_3_13_confirmed = report_03_13_2020 %>%
+  group_by(Country_Region) %>% 
+  summarize(Total_confirmed = sum(Confirmed)) %>% 
+  arrange(desc(Total_confirmed)) %>% 
+  slice(1:10)
+
+ggplot(data = T_3_13_confirmed, mapping = aes(x = Country_Region, y = Total_confirmed)) +
+  geom_point() +
+  theme_bw() +
+  labs(title = "Top 10 countries in confirmed COVID-19 cases (3/13/2020)",
+       x = "Country",
+       y = "Number of confirmed COVID-19 cases") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 10), text = element_text(size = 16),
+       plot.title = element_text(size = 16, hjust = 0.5))
+
+###Deaths 3/2020###
+T_3_13_deaths = report_03_13_2020 %>%
+  group_by(Country_Region) %>% 
+  summarize(Total_deaths = sum(Deaths)) %>% 
+  arrange(desc(Total_deaths)) %>% 
+  slice(1:10)
+
+ggplot(data = T_3_13_deaths, mapping = aes(x = Country_Region, y = Total_deaths)) +
+  geom_point() +
+  theme_bw() +
+  labs(title = "Top 10 countries in COVID-19 deaths (3/13/2020)",
+       x = "Country",
+       y = "Number of COVID-19 deaths") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 10), text = element_text(size = 16),
+        plot.title = element_text(size = 16, hjust = 0.5))
+
+###Confirmed 9/2020###
+T_9_13_confirmed = report_09_13_2020 %>%
+  group_by(Country_Region) %>% 
+  summarize(Total_confirmed = sum(Confirmed)) %>% 
+  arrange(desc(Total_confirmed)) %>% 
+  slice(1:10)
+
+ggplot(data = T_9_13_confirmed, mapping = aes(x = Country_Region, y = Total_confirmed)) +
+  geom_point() +
+  theme_bw() +
+  labs(title = "Top 10 countries in confirmed COVID-19 cases (9/13/2020)",
+       x = "Country",
+       y = "Number of confirmed COVID-19 cases") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 10), text = element_text(size = 16),
+        plot.title = element_text(size = 16, hjust = 0.5))
+
+###Deaths 9/2020###
+T_9_13_deaths = report_09_13_2020 %>%
+  group_by(Country_Region) %>% 
+  summarize(Total_deaths = sum(Deaths)) %>% 
+  arrange(desc(Total_deaths)) %>% 
+  slice(1:10)
+
+ggplot(data = T_9_13_deaths, mapping = aes(x = Country_Region, y = Total_deaths)) +
+  geom_point() +
+  theme_bw() +
+  labs(title = "Top 10 countries in COVID-19 deaths (9/13/2020)",
+       x = "Country",
+       y = "Number of COVID-19 deaths") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 10), text = element_text(size = 16),
+        plot.title = element_text(size = 16, hjust = 0.5))
 ```
 
-We can add to the boxplot to specify more about the data.
+
+2. Make using geom_bar of the 10 states with the most confirmed cases and deaths (two separate graphs) on 3/12/2020 and 9/12/2020. 
 
 ```{r}
-ggplot(data = surveys_complete, mapping = aes(x = species_id, y = weight)) +
-    geom_boxplot(alpha = 0) +
-    geom_jitter(alpha = 0.3, color = "tomato")
+###Confirmed 3/2020###
+US_3_13_confirmed = report_03_13_2020 %>%
+  filter(Country_Region == "US") %>% 
+  group_by(Province_State) %>% 
+  summarize(US_state_confirmed = sum(Confirmed)) %>% 
+  arrange(desc(US_state_confirmed)) %>% 
+  slice(1:10)
+
+ggplot(data = US_3_13_confirmed, mapping = aes(x = US_state_confirmed, y = Province_State)) +
+  geom_bar(stat = 'identity') +
+  theme_bw() +
+  labs(title = "Top 10 US states in confirmed COVID-19 cases (3/13/2020)",
+       x = "Number of confirmed COVID-19 cases",
+       y = "State") +
+  theme(axis.text.x = element_text(size = 12), text = element_text(size = 16),
+        plot.title = element_text(size = 14, hjust = 0.5))
+
+###Deaths 3/2020###
+US_3_13_deaths = report_03_13_2020 %>% 
+  filter(Country_Region == "US") %>% 
+  group_by(Province_State) %>% 
+  summarize(US_state_deaths = sum(Deaths)) %>% 
+  arrange(desc(US_state_deaths)) %>% 
+  slice(1:10)
+
+ggplot(data = US_3_13_deaths, mapping = aes(x = US_state_deaths, y = Province_State)) +
+  geom_bar(stat = 'identity') +
+  theme_bw() +
+  labs(title = "Top 10 US states in COVID-19 deaths (3/13/2020)",
+       x = "Number of COVID-19 deaths",
+       y = "State") +
+  theme(axis.text.x = element_text(size = 12), text = element_text(size = 16),
+        plot.title = element_text(size = 16, hjust = 0.5))
+
+###Confirmed 9/2020###
+US_9_13_confirmed = report_09_13_2020 %>% 
+  filter(Country_Region == "US") %>% 
+  group_by(Province_State) %>% 
+  summarize(US_state_confirmed = sum(Confirmed)) %>% 
+  arrange(desc(US_state_confirmed)) %>% 
+  slice(1:10)
+
+ggplot(data = US_9_13_confirmed, mapping = aes(x = US_state_confirmed, y = Province_State)) +
+  geom_bar(stat = 'identity') +
+  theme_bw() +
+  labs(title = "Top 10 US states in confirmed COVID-19 cases (9/13/2020)",
+       x = "Number of confirmed COVID-19 cases",
+       y = "State") +
+  theme(axis.text.x = element_text(size = 12), text = element_text(size = 16),
+        plot.title = element_text(size = 14, hjust = 0.5))
+
+###Deaths 3/2020###
+US_9_13_deaths = report_09_13_2020 %>% 
+  filter(Country_Region == "US") %>% 
+  group_by(Province_State) %>% 
+  summarize(US_state_deaths = sum(Deaths)) %>% 
+  arrange(desc(US_state_deaths)) %>% 
+  slice(1:10)
+
+ggplot(data = US_9_13_deaths, mapping = aes(x = US_state_deaths, y = Province_State)) +
+  geom_bar(stat = 'identity') +
+  theme_bw() +
+  labs(title = "Top 10 US states in COVID-19 deaths (9/13/2020)",
+       x = "Number of COVID-19 deaths",
+       y = "State") +
+  theme(axis.text.x = element_text(size = 12), text = element_text(size = 16),
+        plot.title = element_text(size = 16, hjust = 0.5))
 ```
 
-The jitter layer appears in front of the boxplot layer. To switch them simply change the order that they are applied onto the plot.
-
-```{r}
-ggplot(data = surveys_complete, mapping = aes(x = species_id, y = weight)) +
-    geom_jitter(alpha = 0.3, color = "tomato") +
-    geom_boxplot(alpha = 0) 
-```
-
-### Challenge 3
-
-Boxplots are useful summaries, but hide the *shape* of the distribution. For example, if there is a bimodal distribution, it would not be observed with a boxplot. An alternative to the boxplot is the violin plot (sometimes known as a beanplot), where the shape (of the density of points) is drawn.
-
-Replace the box plot with a violin plot; see `geom_violin()`.
-
-```{r}
-ggplot(data = surveys_complete, mapping = aes(x = species_id, y = weight)) +
-    geom_violin() 
-```
-
-In many types of data, it is important to consider the *scale* of the observations. For example, it may be worth changing the scale of the axis to better distribute the observations in the space of the plot. Changing the scale of the axes is done similarly to adding/modifying other components (i.e., by incrementally adding commands). Try making these modifications:
-
-* Represent weight on the $log_10$ scale; see `scale_y_log10()`.
-
-```{r}
-ggplot(data = surveys_complete, mapping = aes(x = species_id, y = weight)) +
-    geom_violin() +
-    scale_y_log10()
-```
-
-So far, we’ve looked at the distribution of weight within species. Try making a new plot to explore the distribution of another variable within each species.
-
-* Create boxplot for `hindfoot_length`. Overlay the boxplot layer on a jitter layer to show actual measurements.
-
-```{r}
-ggplot(data = surveys_complete, mapping = aes(x = species_id, y = hindfoot_length)) +
-  geom_jitter(alpha = 0.3) +
-  geom_boxplot()
-```
-
-* Add color to the data points on your boxplot according to the plot from which the sample was taken (`plot_id`). Hint: Check the class for `plot_id`. Consider changing the class of `plot_id` from integer to factor. Why does this change how R makes the graph?
-
-```{r}
-class(surveys_complete$plot_id)
-plot_id_factor = as_factor(surveys_complete$plot_id)
-ggplot(data = surveys_complete, mapping = aes(x = species_id, y = hindfoot_length)) +
-  geom_jitter(alpha = 0.3, aes(color = plot_id_factor)) +
-  geom_boxplot()
-```
-
-**The original class of `plot_id` is number. This causes `ggplot()` to interpret the plot_id's as a continuous variable. Instead, we want them to be categorical, so we can change the class to factor.**
