@@ -1,0 +1,527 @@
+---
+title: "Lab 5- Data wrangling and graphing COVID-19 reporting data (Part 2)"
+author: "Briana Kubik"
+date: "9/21/2020"
+output: html_document
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Joining tables
+
+The [Tidyverse Cookbook](https://rstudio-education.github.io/tidyverse-cookbook/) is a great tool for problem solving and troubleshooting in **`Tidyverse`**. WE will start with learning how to join tables.
+
+```{r warning = FALSE}
+library(tidyverse)
+```
+
+```{r}
+Confirmed_State_3_13 <-   read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/03-13-2020.csv")) %>%
+  rename(Country_Region = "Country/Region", Province_State = "Province/State") %>% 
+  filter (Country_Region == "US") %>% 
+  group_by(Province_State, Country_Region) %>% 
+  summarise(Confirmed = sum(Confirmed)) 
+
+str(Confirmed_State_3_13)
+
+Confirmed_State_9_13 <-   read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/09-13-2020.csv")) %>% 
+  filter (Country_Region == "US") %>% 
+  group_by(Province_State, Country_Region) %>% 
+  summarise(Confirmed = sum(Confirmed))
+
+str(Confirmed_State_9_13)
+```
+
+Using the `str()` function above we can identify that there are 53 states on table 3/13/2020 and 58 states on table 9/13/2020. The function `setdiff()` can identify this difference for us.
+
+```{r}
+setdiff(Confirmed_State_9_13$Province_State, Confirmed_State_3_13$Province_State)
+```
+
+This function identified the extra values in 9/13/2020 to be 4 US territories and one "Recovered" value. We do not need the "Redcovered" data so we can filter that out.
+
+```{r}
+Confirmed_State_9_13 = Confirmed_State_9_13 %>% 
+  filter(Province_State != "Recovered")
+```
+
+Since all states and territories in 9/13/2020 are found in 3/13/2020 we can use `left_join` or `full_join` to merge the tables.
+
+```{r}
+Confirmed_State_3_13_9_13_joined = full_join(Confirmed_State_3_13, Confirmed_State_9_13, by = c("Province_State"))
+
+head(Confirmed_State_3_13_9_13_joined)
+```
+
+This causes the 4 US territories to be `NA` for 3/13 since they were not present in the dataset.
+
+```{r}
+tail(Confirmed_State_3_13_9_13_joined, 5)
+
+which(is.na(Confirmed_State_3_13_9_13_joined))
+```
+
+We can trn the NAs into 0's to make analysis easier. Also notice that we now have columns `Confirmed.x`, `Country_Region.x`, `Confirmed.y`, and `Country_Region.y`. We can rename the `Confirmed` columns and delete `Country_Region` columns.
+
+```{r}
+Confirmed_State_3_13_9_13_joined <- full_join(Confirmed_State_3_13, Confirmed_State_9_13, by = c("Province_State")) %>% 
+  rename(Confirmed_3_13_2020 = "Confirmed.x", Confirmed_9_13_2020 = "Confirmed.y") %>% 
+  select(-Country_Region.x, -Country_Region.y) %>% 
+  replace_na(list(Confirmed_3_13_2020 = 0))
+
+head(Confirmed_State_3_13_9_13_joined)
+
+which(is.na(Confirmed_State_3_13_9_13_joined))
+```
+
+# Switching between wide and long table formats
+
+`gather` and `spread` were used in the Data Carpentriesd tutorial to switch between wide and long table formats. We will now use the function `pivot_longer` and `pivot_wider` to do the same thing.
+
+```{r}
+Confirmed_State_3_13_9_13_joined_long <- Confirmed_State_3_13_9_13_joined %>% 
+              pivot_longer(-c(Province_State), names_to = "Date", values_to = "Confirmed")
+```
+
+This allows us to plot confirmed cases for both dates.
+
+```{r fig.width = 5, fig.height = 10}
+ggplot(Confirmed_State_3_13_9_13_joined_long, aes(x = Confirmed,  y = Province_State))  + 
+    geom_point(aes(color = Date)) 
+```
+
+# Working with time series data
+
+### Data wrangling
+
+We will begin by loading in recent time series data for confirmed cases.
+
+```{r}
+time_series_confirmed <- read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv")) %>%
+  rename(Province_State = "Province/State", Country_Region = "Country/Region")
+```
+
+Sometimes it is better to have the data on our computer and then load it into R.
+
+```{r}
+download.file(url="https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv", 
+               destfile = "data/time_series_covid19_confirmed_global.csv")
+
+time_series_confirmed <- read_csv("data/time_series_covid19_confirmed_global.csv")%>%
+  rename(Province_State = "Province/State", Country_Region = "Country/Region")
+
+head(time_series_confirmed)
+```
+
+The above data is in wide format. To convert to long format:
+
+```{r}
+time_series_confirmed_long <- time_series_confirmed %>% 
+               pivot_longer(-c(Province_State, Country_Region, Lat, Long),
+                            names_to = "Date", values_to = "Confirmed") 
+
+head(time_series_confirmed_long)
+```
+
+I would be convinient to have the confirmed cases and deaths in one table. We can create another table with the deaths and then join the two tables.
+
+```{r}
+download.file(url="https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv", 
+               destfile = "data/time_series_covid19_deaths_global.csv")
+
+time_series_deaths <- read_csv("data/time_series_covid19_deaths_global.csv")%>%
+  rename(Province_State = "Province/State", Country_Region = "Country/Region")
+
+time_series_deaths_long <- time_series_deaths %>% 
+               pivot_longer(-c(Province_State, Country_Region, Lat, Long),
+                            names_to = "Date", values_to = "Deaths") 
+
+head(time_series_deaths_long)
+```
+
+### Joining the time series tables
+
+We have now created a table containing data for confirmed cases in long format and a table containing deaths in long format. To merge the two tables we need a common column in which each row is a unique name. This is often called a Key. None of the columns in this data se meet that criteria, but we can create our own by merging the names for the `Province_State`, `Country_Region`, and `Date` using the function `unite()`.
+
+```{r}
+time_series_confirmed_long <- time_series_confirmed_long %>% 
+  unite(Key, Province_State, Country_Region, Date, sep = ".", remove = FALSE)
+
+head(time_series_confirmed_long)
+```
+
+For the other table we can do the same but also delete redundant columns
+
+```{r}
+time_series_deaths_long <- time_series_deaths_long %>% 
+  unite(Key, Province_State, Country_Region, Date, sep = ".") %>% 
+  select(Key, Deaths)
+
+head(time_series_deaths_long)
+```
+
+Now we will join the tables using a **`full_join`** which means that the keys that are common to the tables will be joined and there will be counts for both Confirmed and Deaths. Where there are no matching values, NAs are returned for the ones missing. We can use `select()` to remove the Key afterwards, since we no longer have a need for it.
+
+```{r}
+time_series_long_joined <- full_join(time_series_confirmed_long,
+              time_series_deaths_long, by = c("Key")) %>% 
+              select(-Key)
+
+head(time_series_long_joined)
+```
+
+Check to make sure neither Confirmed nor Death counts have NAs.
+
+```{r}
+which(is.na(time_series_long_joined$Confirmed))
+
+which(is.na(time_series_long_joined$Deaths))
+```
+
+We will now use this compiled table for graphing, but we first need to reformat the Dates using **`lubridate`**. 
+
+```{r warning = FALSE}
+library(lubridate)
+```
+
+```{r}
+time_series_long_joined$Date = mdy(time_series_long_joined$Date)
+```
+
+
+Confirmed and Deaths are count data and there may be times when we want to plot both on the same graph. There are multiple ways to accomplish this and one is through creating a column using `pivot_longer()`.
+
+```{r}
+time_series_long_joined_counts <- time_series_long_joined %>% 
+  pivot_longer(-c(Province_State, Country_Region, Lat, Long, Date),
+               names_to = "Report_Type", values_to = "Counts")
+
+head(time_series_long_joined_counts)
+```
+
+### Making graphs from the time series data
+
+To make a times series graph of the confirmed cases we need to summarize the Country date to count up the individual state data for the US.
+
+```{r}
+time_series_long_joined %>% 
+  group_by(Country_Region, Date) %>% 
+  summarise_at(c("Confirmed", "Deaths"), sum) %>% 
+  filter (Country_Region == "US") %>% 
+    ggplot(aes(x = Date,  y = Deaths)) + 
+    geom_point() +
+    geom_line() +
+    ggtitle("US COVID-19 Deaths")
+```
+
+Let’s look at the US data in the context of a few other countries:
+
+```{r}
+time_series_long_joined %>% 
+  group_by(Country_Region,Date) %>% 
+  summarise_at(c("Confirmed", "Deaths"), sum) %>% 
+  filter (Country_Region %in% c("China","Japan", "Korea, South",
+                                "Italy","Spain", "US")) %>% 
+    ggplot(aes(x = Date,  y = Deaths)) + 
+    geom_point() +
+    geom_line() +
+    ggtitle("COVID-19 Deaths") +
+    facet_wrap(~Country_Region, ncol=2, scales="free_y")
+```
+
+Now several countries on the same graph:
+
+```{r}
+time_series_long_joined %>% 
+    group_by(Country_Region,Date) %>% 
+    summarise_at(c("Confirmed", "Deaths"), sum) %>% 
+    filter (Country_Region %in% c("China","France","Italy", 
+                                "Korea, South", "US")) %>% 
+    ggplot(aes(x = Date,  y = Deaths, color = Country_Region)) + 
+    geom_point() +
+    geom_line() +
+    ggtitle("COVID-19 Deaths")
+```
+
+We can use the alternative data frame with column `Report_Type` to show Confirmed and Deaths. Because the counts for Deaths are low relative to Confirmed a log scale works best here for seeing the pattern
+
+```{r}
+time_series_long_joined_counts %>% 
+  group_by(Country_Region, Report_Type, Date) %>% 
+  summarise(Counts = sum(Counts)) %>% 
+  filter (Country_Region == "US") %>% 
+    ggplot(aes(x = Date,  y = log2(Counts), fill = Report_Type, color = Report_Type)) + 
+    geom_point() +
+    geom_line() +
+    ggtitle("US COVID-19 Cases")
+```
+
+# Exercises
+
+1. Finish the Data Visualization tutorial and add it your GitPage web site
+
+**The Data Visualization tutorial can be found [here](Lab4b_BrianaKubik.html).**
+
+2. Revise the above example for joining tables using 6/13/2020 and 9/13/2020. Plot the data as a bar plot. Make sure your graph looks nice in the report by adjusting the height in the R code chunk header.
+
+**I first read in each of the data sets using the url to the data on the github page. To organize, I also renamed some values, filtered to only include US data, and grouped/summarized the data to show confirmed cases.**
+
+```{r}
+Confirmed_State_6_13 <- read_csv(url("https://github.com/CSSEGISandData/COVID-19/raw/master/csse_covid_19_data/csse_covid_19_daily_reports/06-13-2020.csv")) %>% 
+  filter (Country_Region == "US") %>% 
+  group_by(Province_State, Country_Region) %>% 
+  summarise(Confirmed = sum(Confirmed))
+
+Confirmed_State_9_13 <-   read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/09-13-2020.csv")) %>% 
+  filter (Country_Region == "US") %>% 
+  group_by(Province_State, Country_Region) %>% 
+  summarise(Confirmed = sum(Confirmed))
+```
+
+
+```{r results = 'hide'}
+str(Confirmed_State_6_13) #58
+str(Confirmed_State_9_13) #58
+```
+
+**Using `full_join()` to merge the tables and remove any NAs:**
+
+```{r}
+Confirmed_State_6_13_9_13_joined <- full_join(Confirmed_State_6_13,
+      Confirmed_State_9_13, by = c("Province_State")) %>% 
+      rename(Confirmed_6_13_2020 = "Confirmed.x", Confirmed_9_13_2020 = "Confirmed.y") %>% 
+      select(-Country_Region.x, -Country_Region.y) %>% 
+      replace_na(list(Confirmed_6_13_2020 = 0))
+
+head(Confirmed_State_6_13_9_13_joined)
+
+which(is.na(Confirmed_State_6_13_9_13_joined))
+```
+
+**Now I have a table called `Confirmed_State_6_13_9_13_joined` that contains the number of confirmed cases for each US state on both 6/13/2020 and 9/13/2020. In order to effectively graph the data, I will change the table into long format using `pivot_longer()`.**
+
+```{r}
+Confirmed_State_6_13_9_13_joined_long <- 
+  Confirmed_State_6_13_9_13_joined %>% 
+  pivot_longer(-c(Province_State), names_to = "Date", values_to = "Confirmed")
+```
+
+**NOW PLOT!**
+
+```{r fig.height = 10}
+ggplot(Confirmed_State_6_13_9_13_joined_long, aes(x = Confirmed,  y = Province_State, fill = Date))  + 
+    geom_bar(stat = 'identity', position = 'dodge') 
+```
+
+
+3. Add more informative x and y labels and a title to the above graph in Ex2.
+
+```{r fig.height = 10}
+ggplot(Confirmed_State_6_13_9_13_joined_long, aes(x = Confirmed,  y = Province_State, fill = Date))  + 
+  geom_bar(stat = 'identity', position = 'dodge') +
+  labs(title = "Total confirmed COVID-19 cases by US state \n from 6/13/2020 and 9/13/2020",
+       x = "Total number of confirmed cases",
+       y = "US state") +
+  theme(text = element_text(size = 12),
+        plot.title = element_text(size = 16, hjust = 0.5))
+```
+
+4. Using the time series data. Make a plot of the total number of confirmed deaths per day worldwide.
+
+**First, I will rewrite the code for reading in the global deaths time series data and converting it to long format.**
+
+```{r}
+time_series_deaths <- read_csv("data/time_series_covid19_deaths_global.csv")%>%
+  rename(Province_State = "Province/State", Country_Region = "Country/Region")
+
+time_series_deaths_long <- time_series_deaths %>% 
+               pivot_longer(-c(Province_State, Country_Region, Lat, Long),
+                            names_to = "Date", values_to = "Deaths") 
+```
+
+**After, we will need to group the data according to the date. The first step would be to convert the dates using `mdy()`. Now we can group this data by date and summarize by the sum of the total confirmed deaths per day and plot.**
+
+```{r}
+time_series_deaths_long$Date = mdy(time_series_deaths_long$Date)
+
+time_series_deaths_long %>% 
+  group_by(Date) %>% 
+  summarize(Sum = sum(Deaths)) %>% 
+    ggplot(aes(x = Date, y = Sum)) +
+    geom_point() +
+    ggtitle("COVID-19 Deaths Worldwide") +
+    labs(x = "Date", y = "Total Confirmed Deaths")
+    
+```
+
+5. Use Mutate to make a new column with deaths/confirmed cases (Hint: this might be best done after joining the tables, but before pivoting longer).
+
+**To complete this exercise, I will first read in the global time series data for confirmed cases and deaths and convert them each to long format.**
+
+```{r}
+time_series_confirmed <- read_csv("data/time_series_covid19_confirmed_global.csv")%>%
+  rename(Province_State = "Province/State", Country_Region = "Country/Region")
+
+time_series_confirmed_long <- time_series_confirmed %>% 
+               pivot_longer(-c(Province_State, Country_Region, Lat, Long),
+                            names_to = "Date", values_to = "Confirmed") 
+
+time_series_deaths <- read_csv("data/time_series_covid19_deaths_global.csv")%>%
+  rename(Province_State = "Province/State", Country_Region = "Country/Region")
+
+time_series_deaths_long <- time_series_deaths %>% 
+               pivot_longer(-c(Province_State, Country_Region, Lat, Long),
+                            names_to = "Date", values_to = "Deaths") 
+```
+
+**To join the tables we need to creat a Key to indicidually identify each row. We can do this by combining `Province_State`, `Country_Region`, and `Date` using the function `unite()`.**
+
+```{r}
+time_series_confirmed_long <- time_series_confirmed_long %>% 
+  unite(Key, Province_State, Country_Region, Date, sep = ".", remove = FALSE)
+
+time_series_deaths_long <- time_series_deaths_long %>% 
+  unite(Key, Province_State, Country_Region, Date, sep = ".") %>% 
+  select(Key, Deaths)
+```
+
+**We can then use the function `full_join()` to merge the tables using the common key that we created.**
+
+```{r}
+time_series_long_joined <- full_join(time_series_confirmed_long,
+              time_series_deaths_long, by = c("Key")) %>% 
+              select(-Key)
+```
+
+**We now have a table containing global time series data for both confirmed cases and deaths. We will generte a new column to describe the deaths/confirmed cases (`DC`).**
+
+```{r}
+time_series_long_joined = time_series_long_joined %>% 
+  mutate(DC = Confirmed/Deaths)
+```
+
+6. Plot US deaths/confirmed cases per day.
+
+**In order to make the data easier to handle, I converted all the dates using `mdy()` and replaced all NaN and Inf values in the `DC` column with 0's. Then I was able to group the data by date, sum all the values in the `DC` column, and plot.**
+
+```{r}
+time_series_long_joined$Date = mdy(time_series_long_joined$Date)
+
+time_series_long_joined$DC = replace_na(time_series_long_joined$DC, 0)
+
+time_series_long_joined$DC = replace(time_series_long_joined$DC, which(is.infinite(time_series_long_joined$DC)), 0)
+
+time_series_long_joined %>% 
+  group_by(Date) %>% 
+  summarize(SumDC = sum(DC)) %>% 
+    ggplot(aes(x = Date, y = SumDC)) +
+    geom_point() +
+    ggtitle("COVID-19 Deaths/Confirmed Cases Worldwide") +
+    labs(x = "Date", y = "Deaths/Confirmed Cases")
+```
+
+
+7. Make a single graph with from the times series data with the 10 countries with the hightest death total.
+
+**To start out I will read in only the global time series data for deaths and convert into long format.**
+
+```{r}
+time_series_deaths <- read_csv("data/time_series_covid19_deaths_global.csv")%>%
+  rename(Province_State = "Province/State", Country_Region = "Country/Region")
+
+time_series_deaths_long <- time_series_deaths %>% 
+               pivot_longer(-c(Province_State, Country_Region, Lat, Long),
+                            names_to = "Date", values_to = "Deaths") 
+```
+
+**Now we want to identify the countries with the highest death totals. To do this we will group by `Country_Region`, summarize by taking the sum of deaths in each region, arranging the countries in descending order by deaths, and extracting the top 10 countries using `slice()`. I set this all to a variable `Top_10` so that I can extract the data later.**
+
+```{r}
+Top_10 = time_series_deaths_long %>% 
+  group_by(Country_Region) %>% 
+  summarize(T_Deaths = sum(Deaths)) %>% 
+  arrange(desc(T_Deaths)) %>% 
+  slice(1:10)
+```
+
+**Now we have which countries are the top 10 in deaths worldwide so we need to extract those from the time series data. I did this by identifying which countries were in my Top_10 countries and isolating those rows. The data for only these top 10 countries is now in a variable caleled `Top_10_time_series_deaths_long`.**
+
+```{r}
+Top_10_time_series_deaths_long = time_series_deaths_long[which(time_series_deaths_long$Country_Region %in% Top_10$Country_Region),]
+```
+
+**To graph we must first convert the dates into a useable form using `mdy()`. Then group them by `Country_Region` and `Date` and summarize by the sum of deaths for each unique Country/Date pair. Finally, we plot the deaths for the top 10 countries, segregating them by color.**
+
+```{r}
+Top_10_time_series_deaths_long$Date = mdy(Top_10_time_series_deaths_long$Date)
+
+Top_10_time_series_deaths_long %>%
+  group_by(Country_Region, Date) %>% 
+  summarize(T_DeathsbyDate = sum(Deaths)) %>% 
+    ggplot(aes(x = Date, y = T_DeathsbyDate)) +
+    geom_point(aes(color = Country_Region)) +
+    ggtitle("COVID-19 Deaths in Top 10 Countries Worldwide")
+```
+
+8. Using Facet_Wraps make a graph from the times series data with the 10 countries with the hightest death total. Format the table to look nice in the report by changing the number of rows in your graph and/or adjusting the height in the R code chunk header.
+
+**Using the variables created above, we are able to facet the same data using `facet_wrap(facets = vars(Country_Region))`.**
+
+```{r}
+Top_10_time_series_deaths_long %>% 
+  group_by(Country_Region, Date) %>% 
+  summarize(T_DeathsbyDate = sum(Deaths)) %>% 
+    ggplot(aes(x = Date, y = T_DeathsbyDate)) +
+    geom_point() +
+    facet_wrap(facets = vars(Country_Region)) +
+    ggtitle("COVID-19 Deaths in Top 10 Countries Worldwide") +
+    labs(x = "Date", y = "Deaths")
+```
+
+
+9. Using Facet_Wraps make a graph from the times series data for confirmed cases for all US states and territories. Format the table to look nice in the report by changing the number of rows in your graph and/or adjusting the height in the R code chunk header.
+
+**I will start out by reading in the time series data for confirmed US cases, converting it to long format, and editing the dates.**
+
+```{r}
+time_series_US_confirmed = read_csv(url("https://github.com/CSSEGISandData/COVID-19/raw/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_US.csv"))
+
+time_series_US_confirmed_long = time_series_US_confirmed %>% 
+  pivot_longer(-c(UID, iso2, iso3, code3, FIPS, Admin2, Province_State, Country_Region, Lat, Long_, 
+                  Combined_Key), names_to = "Date", values_to = "Confirmed")
+
+time_series_US_confirmed_long$Date = mdy(time_series_US_confirmed_long$Date)
+```
+
+**We can now, group, summarize, facet, and plot the data.**
+
+```{r fig.height = 10, fig.width = 10}
+time_series_US_confirmed_long %>% 
+  group_by(Province_State, Date) %>% 
+  summarize(T_CC = sum(Confirmed)) %>% 
+    ggplot(aes(x = Date, y = T_CC)) +
+    geom_point() +
+    facet_wrap(facet = vars(Province_State)) +
+    ggtitle("COVID-19 Confirmed Cases in US by State") +
+    labs(x = "Date", y = "Confirmed Cases")
+```
+
+
+10. Apply a theme other than the one used in the Data Carpentries tutorial to the graph in Ex8.
+
+```{r}
+Top_10_time_series_deaths_long %>% 
+  group_by(Country_Region, Date) %>% 
+  summarize(T_DeathsbyDate = sum(Deaths)) %>% 
+    ggplot(aes(x = Date, y = T_DeathsbyDate)) +
+    geom_point() +
+    facet_wrap(facets = vars(Country_Region)) +
+    ggtitle("COVID-19 Deaths in Top 10 Countries Worldwide") +
+    labs(x = "Date", y = "Deaths") +
+    theme_dark()
+```
+

@@ -22,4 +22,6 @@ knitr::opts_chunk$set(echo = TRUE)
 
 [Lab4b- Data Visualization with ggplot2](Lab4b_BrianaKubik.html)
 
+[Lab5- Data wrangling and graphing COVID-19 reporting data (Part 2)](Lab5_BrianaKubik.html)
+
 

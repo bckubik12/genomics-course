@@ -1,5 +1,5 @@
 ---
-title: "Lab 4- Data wrangling and graphing COVID-19 reporting data (Part 1)"
+title: "Lab 4a- Data wrangling and graphing COVID-19 reporting data (Part 1)"
 author: "Briana Kubik"
 date: "9/14/2020"
 output: html_document
@@ -16,8 +16,6 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r warning = FALSE}
 library(tidyverse)
 ```
-
-
 
 ```{r}
 report_03_11_2020 <-   read_csv(url("https://github.com/CSSEGISandData/COVID-19/raw/master/csse_covid_19_data/csse_covid_19_daily_reports/03-11-2020.csv")) %>%
@@ -174,7 +172,8 @@ ggplot(data = T_9_13_deaths, mapping = aes(x = Country_Region, y = Total_deaths)
   labs(title = "Top 10 countries in COVID-19 deaths (9/13/2020)",
        x = "Country",
        y = "Number of COVID-19 deaths") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 10), text = element_text(size = 16),
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 10), 
+        text = element_text(size = 16),
         plot.title = element_text(size = 16, hjust = 0.5))
 ```
 
