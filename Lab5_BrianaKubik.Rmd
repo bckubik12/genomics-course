@@ -464,7 +464,8 @@ Top_10_time_series_deaths_long %>%
   summarize(T_DeathsbyDate = sum(Deaths)) %>% 
     ggplot(aes(x = Date, y = T_DeathsbyDate)) +
     geom_point(aes(color = Country_Region)) +
-    ggtitle("COVID-19 Deaths in Top 10 Countries Worldwide")
+    ggtitle("COVID-19 Deaths in Top 10 Countries Worldwide") +
+    labs(x = "Date", y = "Deaths")
 ```
 
 8. Using Facet_Wraps make a graph from the times series data with the 10 countries with the hightest death total. Format the table to look nice in the report by changing the number of rows in your graph and/or adjusting the height in the R code chunk header.
