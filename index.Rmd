@@ -1,5 +1,5 @@
 ---
-title: "Lab2_BrianaKubik"
+title: "Index"
 author: "Briana Kubik"
 date: "8/31/2020"
 output: html_document
@@ -25,3 +25,7 @@ knitr::opts_chunk$set(echo = TRUE)
 [Lab5- Data wrangling and graphing COVID-19 reporting data (Part 2)](Lab5_BrianaKubik.html)
 
 [Lab5_EXTRA- Interactive Graphs and Animations from the COVID-19 reporting data](Lab5_EXTRA_BrianaKubik.html)
+
+[Lab6- Data Maps and Interactive Graphs from the COVID-19 reporting data](Lab6_BrianaKubik.html)
+
+[Lab6- Report](Lab6_Report_BrianaKubik.html)
