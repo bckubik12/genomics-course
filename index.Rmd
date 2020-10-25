@@ -29,3 +29,5 @@ knitr::opts_chunk$set(echo = TRUE)
 [Lab6- Data Maps and Interactive Graphs from the COVID-19 reporting data](Lab6_BrianaKubik.html)
 
 [Lab6- Report](Lab6_Report_BrianaKubik.html)
+
+[Lab7- RScript](Lab7_RScript_BrianaKubik.html)

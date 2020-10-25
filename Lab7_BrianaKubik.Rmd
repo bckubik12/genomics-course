@@ -1,0 +1,82 @@
+---
+title: 'Lab 7- RNA-Seq workflow: gene-level exploratory analysis and differential
+  expression'
+author: "Briana Kubik"
+date: "10/12/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Background
+
+When you are trying to understand a new analysis method, a good strategy is to
+
+1. Read background material so that you conceptual understand the work flow.
+2. Go through a tutorial and/or R vignette with the tools/packages you will need.
+3. Apply the tutorials/vignettes to your experiment.
+
+Today we will go through steps 1 and 2. For an introduction to RNAseq analysis we will discuss this [Galaxy workflow](https://galaxyproject.org/tutorials/rb_rnaseq/). The steps involving **read mapping**, **transcript quantification**, and **read counting** are usually done on a Unix computer using the command line or an interface to a Unix computer such as Galaxy. We will go through these steps in the tutorial and then in a later lab on a Unix virtual machine or the MGHPCC. Today in lab we will work on **differential expression analysis in R**.
+
+# Bioconductor
+
+Bioconductor is an open source, open development software project for genomic data analysis. It is based primarily on the R programming language. There are nearly 1,000 R software packages available and an active user community. R/Bioconductor is one of the primary mechanisms for publishing new genomic data analysis tools. We will use numerous Bioconductor packages in this course. Bioconductor is also available for cloud computing on Amazon and other platforms.
+
+You can install Bioconductor by typing in the R console
+
+```{r}
+#if (!requireNamespace("BiocManager", quietly = TRUE))
+#    install.packages("BiocManager")
+#BiocManager::install(version = "3.11")
+```
+
+Individual packages that are not part of the BioConductor core can be installed using
+
+```{r}
+#if (!requireNamespace("BiocManager", quietly = TRUE))  
+#    install.packages("BiocManager")  
+#BiocManager::install(name_of_package)
+```
+
+# Introduction to a RNA-Seq differential expression workflow
+
+This lab will go through **differential expression analysis in R** using DESeq2 along with other Bioconductor and core R packages.
+
+The data used in this workflow is an RNA-Seq experiment of airway smooth muscle cells treated with dexamethasone, a synthetic glucocorticoid steroid with anti-inflammatory effects. Glucocorticoids are used, for example, in asthma patients to prevent or reduce inflammation of the airways. In the experiment, four primary human airway smooth muscle cell lines were treated with 1 micromolar dexamethasone for 18 hours. For each of the four cell lines, we have a treated and an untreated sample. The reference for the experiment is:
+
+Himes BE, Jiang X, Wagner P, Hu R, Wang Q, Klanderman B, Whitaker RM, Duan Q, Lasky-Su J, Nikolos C, Jester W, Johnson M, Panettieri R Jr, Tantisira KG, Weiss ST, Lu Q. “RNA-Seq Transcriptome Profiling Identifies CRISPLD2 as a Glucocorticoid Responsive Gene that Modulates Cytokine Function in Airway Smooth Muscle Cells.” PLoS One. 2014 Jun 13;9(6):e99625. PMID: 24926665. GEO: GSE52778.
+
+To install the packages and data needed to complete this tutorial on your computer
+
+```{r}
+#BiocManager::install("rnaseqGene")
+
+# I also needed to install the following on my computer 
+# (You will realize this if you get an error message that the corresponding library will not load)
+
+#BiocManager::install("airway")
+#BiocManager::install("tximeta")
+#BiocManager::install("DESeq2")
+#BiocManager::install("Gviz")
+#BiocManager::install("sva")
+#BiocManager::install("RUVSeq")
+#BiocManager::install("fission")
+```
+
+We will go step wise through a Bioconductor workflow vignette [RNA-seq workflow: gene-level exploratory analysis and differential expression](https://master.bioconductor.org/packages/release/workflows/html/rnaseqGene.html). We will start by opening the html file associated with the workflow and downloading the R script to our computer.
+
+# Exercises
+
+1. Install Bioconductor and the above packages.
+
+2. Read through the html version of the vignette.
+<br/><br/> **An RMarkdown file working through the vignette can be found [here](Lab7_vignette_BrianaKubik.html)**
+
+3. Line by line run the R script to make sure the vignette runs properly on your computer and so that you can see the steps involved. Note that vignette uses `tidyverse` packages `ggplot2` and `dyplr`, but also makes use of core R plotting packages.
+
+4. Transform the R script that is part of the vignette into a .Rmd file, adding captions and your own notes along the way. This is a good time to **explore** by changing the vignette code. Note that the workflow in R starts with **`2.3 Reading in data with tximeta`**. The step previous to this **`2.2 Quantifying with Salmon`** is done outside of R on a Unix computer or Galaxy.
+<br/><br/> **This RMarkdown file can be found [here](Lab7_RScript_BrianaKubik.html)**
+
+5. Push the knitted file onto your GitHub site and link it to your GitHub web page.
