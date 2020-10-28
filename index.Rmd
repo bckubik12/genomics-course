@@ -31,3 +31,5 @@ knitr::opts_chunk$set(echo = TRUE)
 [Lab6- Report](Lab6_Report_BrianaKubik.html)
 
 [Lab7- RScript](Lab7_RScript_BrianaKubik.html)
+
+[Lab9_EXTRA- Programming in R: Control Structures and Functions](Lab9_EXTRA_BrianaKubik.html)

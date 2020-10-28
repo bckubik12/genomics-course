@@ -11,8 +11,9 @@
 
 <meta name="author" content="Briana Kubik" />
 
+<meta name="date" content="2020-10-28" />
 
-<title>Index</title>
+<title>Lab 9 EXTRA- Programming in R: Control Structures and Functions</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -384,25 +385,423 @@ summary {
 
 
 
-<h1 class="title toc-ignore">Index</h1>
+<h1 class="title toc-ignore">Lab 9 EXTRA- Programming in R: Control Structures and Functions</h1>
 <h4 class="author">Briana Kubik</h4>
-<h4 class="date">8/31/2020</h4>
+<h4 class="date">10/28/2020</h4>
 
 </div>
 
 
-<p><a href="Lab1_BrianaKubik.html">Lab1- Intro to R and reproducible research</a></p>
-<p><a href="Lab2_BrianaKubik.html">Lab2- git, GitHub and Rstudio projects</a></p>
-<p><a href="Lab3A_BrianaKubik.html">Lab3A- Starting with the data</a></p>
-<p><a href="Lab3B_BrianaKubik.html">Lab3B- Manipulating, analyzing and exporting data with tidyverse</a></p>
-<p><a href="Lab4a_BrianaKubik.html">Lab4a- Data wrangling and graphing COVID-19 reporting data (Part 1)</a></p>
-<p><a href="Lab4b_BrianaKubik.html">Lab4b- Data Visualization with ggplot2</a></p>
-<p><a href="Lab5_BrianaKubik.html">Lab5- Data wrangling and graphing COVID-19 reporting data (Part 2)</a></p>
-<p><a href="Lab5_EXTRA_BrianaKubik.html">Lab5_EXTRA- Interactive Graphs and Animations from the COVID-19 reporting data</a></p>
-<p><a href="Lab6_BrianaKubik.html">Lab6- Data Maps and Interactive Graphs from the COVID-19 reporting data</a></p>
-<p><a href="Lab6_Report_BrianaKubik.html">Lab6- Report</a></p>
-<p><a href="Lab7_RScript_BrianaKubik.html">Lab7- RScript</a></p>
-<p><a href="Lab9_EXTRA_BrianaKubik.html">Lab9_EXTRA- Programming in R: Control Structures and Functions</a></p>
+<div id="control-structures" class="section level1">
+<h1>Control Structures</h1>
+<p>A main benefit of coding is being able to create your own programs and functions. Control structures allow you to control the flow of execution of a series of expressions. Common control structures are:</p>
+<ul>
+<li><code>if</code> and <code>else</code> to test a condition and act on it</li>
+<li><code>for</code> to execute a loop a fixed number of times</li>
+<li><code>while</code> to execute a loop while a condition is TRUE for nonfixed number of times</li>
+</ul>
+<div id="conditional-statements-ith-if-else" class="section level2">
+<h2>Conditional statements ith <code>if-else</code></h2>
+<p>The <code>if</code>-<code>else</code> control structure is the most commonly used as it allows you to test a condition and apply some other action on it depending on if it is TRUE or FALSE.</p>
+<p>You can use just the <code>if</code> statement:</p>
+<pre class="r"><code>if(&lt;condition&gt;) {
+        ## do something
+} 
+## Continue with rest of code</code></pre>
+<p>You can also add an <code>else</code> statement to perform an action if the condition is FALSE:</p>
+<pre class="r"><code>if(&lt;condition&gt;) {
+        ## do something
+} 
+else {
+        ## do something else
+}</code></pre>
+<p>You can also apply more than one condition in the same string of code:</p>
+<pre class="r"><code>if(&lt;condition1&gt;) {
+        ## do something
+} else if(&lt;condition2&gt;)  {
+        ## do something different
+} else {
+        ## do something different
+}</code></pre>
+<p>Here is an example for an if/else statement:</p>
+<pre class="r"><code>## Generate a uniform random number
+x &lt;- runif(1, 0, 10)  
+if(x &gt; 3) {
+        y &lt;- 10
+} else {
+        y &lt;- 0
+}
+
+## Modification: the value of y depends on whether x is 3, 4, 5, or 6
+x &lt;- runif(1, 0, 10)  
+if(x %in% 3:6) {
+        y &lt;- 10
+} else {
+        y &lt;- 0
+}</code></pre>
+<p>The value of <code>y</code> is set depending on the condition in the <code>if()</code> statement.</p>
+</div>
+<div id="important-operators" class="section level2">
+<h2>Important Operators</h2>
+<div id="comparison-operators" class="section level4">
+<h4>Comparison operators</h4>
+<ul>
+<li><code>==</code> equal</li>
+<li><code>!=</code> not equal</li>
+<li><code>&gt;</code> greater than</li>
+<li><code>&gt;=</code> greater than or equal</li>
+<li><code>&lt;</code> less than</li>
+<li><code>&lt;=</code> less than or equal</li>
+</ul>
+</div>
+<div id="logical-operators" class="section level4">
+<h4>Logical operators</h4>
+<ul>
+<li><code>&amp;</code> and</li>
+<li><code>|</code> or</li>
+<li><code>!</code> not</li>
+</ul>
+</div>
+</div>
+<div id="for-loops" class="section level2">
+<h2><code>for</code> loops</h2>
+<p><code>for</code> loops are the main loops used in R for data analyses and such. They take a iterator variable and assign it a successive value from a sequence or vector. For loops are most commonly used for iterating over the elements of an object (list, vector, etc.).</p>
+<pre class="r"><code>for(i in 1:10) {
+  print(i)
+}</code></pre>
+<pre><code>## [1] 1
+## [1] 2
+## [1] 3
+## [1] 4
+## [1] 5
+## [1] 6
+## [1] 7
+## [1] 8
+## [1] 9
+## [1] 10</code></pre>
+<pre class="r"><code>## Modification: For numbers 1:10 print i-1
+for(i in 1:10) {
+  print(i-1)
+}</code></pre>
+<pre><code>## [1] 0
+## [1] 1
+## [1] 2
+## [1] 3
+## [1] 4
+## [1] 5
+## [1] 6
+## [1] 7
+## [1] 8
+## [1] 9</code></pre>
+<p>This loop takes the i variable and in each iteration of the loop gives it values 1, 2, 3, …, 10, executes the code within the curly braces, and then the loop exits.</p>
+<p>The following three loops all have the same behavior.</p>
+<pre class="r"><code>x &lt;- c(&quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;d&quot;)
+for(i in 1:4) {
+        ## Print out each element of &#39;x&#39;
+        print(x[i])  
+}</code></pre>
+<pre><code>## [1] &quot;a&quot;
+## [1] &quot;b&quot;
+## [1] &quot;c&quot;
+## [1] &quot;d&quot;</code></pre>
+<pre class="r"><code>## Modification: Multiply each value of x by 2 and print to console
+x &lt;- c(1, 2, 3, 4)
+for(i in 1:4) {
+        x[i] = x[i] * 2
+        print(x[i])  
+}</code></pre>
+<pre><code>## [1] 2
+## [1] 4
+## [1] 6
+## [1] 8</code></pre>
+<p>The <code>seq_along()</code> function is commonly used in conjunction with for loops in order to generate an integer sequence based on the length of an object (in this case, the object <code>x</code>).</p>
+<pre class="r"><code>## Generate a sequence based on length of &#39;x&#39;
+x &lt;- c(&quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;d&quot;)
+for(i in seq_along(x)) {   
+        print(x[i])
+}</code></pre>
+<pre><code>## [1] &quot;a&quot;
+## [1] &quot;b&quot;
+## [1] &quot;c&quot;
+## [1] &quot;d&quot;</code></pre>
+<pre class="r"><code>## Modification: Same as above with seq_along()
+x &lt;- c(1, 2, 3, 4)
+for(i in seq_along(x)) {
+        x[i] = x[i] * 2
+        print(x[i])  
+}</code></pre>
+<pre><code>## [1] 2
+## [1] 4
+## [1] 6
+## [1] 8</code></pre>
+<p>It is not necessary to use an index-type variable.</p>
+<pre class="r"><code>x &lt;- c(&quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;d&quot;)
+for(letter in x) {
+        print(letter)
+}</code></pre>
+<pre><code>## [1] &quot;a&quot;
+## [1] &quot;b&quot;
+## [1] &quot;c&quot;
+## [1] &quot;d&quot;</code></pre>
+<pre class="r"><code>## Modification: Change the index variable
+for(let in x) {
+        print(let)
+}</code></pre>
+<pre><code>## [1] &quot;a&quot;
+## [1] &quot;b&quot;
+## [1] &quot;c&quot;
+## [1] &quot;d&quot;</code></pre>
+<p>For one line loops, the curly braces are not strictly necessary.</p>
+<pre class="r"><code>for(i in 1:4) print(x[i])</code></pre>
+<pre><code>## [1] &quot;a&quot;
+## [1] &quot;b&quot;
+## [1] &quot;c&quot;
+## [1] &quot;d&quot;</code></pre>
+<pre class="r"><code>## Modification: add 1 to each value of x and print to console
+x &lt;- c(1, 2, 3, 4)
+for(i in 1:4) print(x[i] + 1)</code></pre>
+<pre><code>## [1] 2
+## [1] 3
+## [1] 4
+## [1] 5</code></pre>
+<p>However, I like to use curly braces even for one-line loops, because that way if you decide to expand the loop to multiple lines, you won’t be burned because you forgot to add curly braces (and you will be burned by this).</p>
+</div>
+<div id="nested-for-loops" class="section level2">
+<h2>Nested <code>for</code> loops</h2>
+<p><code>for</code> loops can be nested inside each other:</p>
+<pre class="r"><code>x &lt;- matrix(1:6, 2, 3)
+for(i in seq_len(nrow(x))) {
+        for(j in seq_len(ncol(x))) {
+                print(x[i, j])
+        }   
+}</code></pre>
+<pre><code>## [1] 1
+## [1] 3
+## [1] 5
+## [1] 2
+## [1] 4
+## [1] 6</code></pre>
+<pre class="r"><code>## Modification: multiple each value in the matrix by 2 and print to console
+x &lt;- matrix(1:6, 2, 3)
+for(i in 1:nrow(x)) {
+        for(j in 1:ncol(x)) {
+                print(x[i, j] * 2)
+        }   
+}</code></pre>
+<pre><code>## [1] 2
+## [1] 6
+## [1] 10
+## [1] 4
+## [1] 8
+## [1] 12</code></pre>
+<p>Nested loops are commonly needed for multidimensional or hierarchical data structures (e.g. matrices, lists). Be careful with nesting though. Nesting beyond 2 to 3 levels often makes it difficult to read/understand the code. If you find yourself in need of a large number of nested loops, you may want to break up the loops by using functions (discussed later).</p>
+</div>
+<div id="while-loops" class="section level2">
+<h2><code>while</code> loops</h2>
+<p>While loops begin by testing a condition. If it is true, then they execute the loop body. Once the loop body is executed, the condition is tested again, and so forth, until the condition is false, after which the loop exits.</p>
+<pre class="r"><code>count &lt;- 0
+while(count &lt; 10) {
+        print(count)
+        count &lt;- count + 1
+}</code></pre>
+<pre><code>## [1] 0
+## [1] 1
+## [1] 2
+## [1] 3
+## [1] 4
+## [1] 5
+## [1] 6
+## [1] 7
+## [1] 8
+## [1] 9</code></pre>
+<pre class="r"><code>## Modification: print the value of count to the console until it is less than 1
+count &lt;- 50
+while(count &gt; 1) {
+        print(count)
+        count &lt;- count/2
+}</code></pre>
+<pre><code>## [1] 50
+## [1] 25
+## [1] 12.5
+## [1] 6.25
+## [1] 3.125
+## [1] 1.5625</code></pre>
+<p>While loops can potentially result in infinite loops if not written properly. Use with care!</p>
+<p>Sometimes there will be more than one condition in the test.</p>
+<pre class="r"><code>z &lt;- 5
+set.seed(1)
+while(z &gt;= 3 &amp;&amp; z &lt;= 10) {
+        coin &lt;- rbinom(1, 1, 0.5)
+        
+        if(coin == 1) {  ## random walk
+                z &lt;- z + 1
+        } else {
+                z &lt;- z - 1
+        } 
+}
+print(z)</code></pre>
+<pre><code>## [1] 2</code></pre>
+<pre class="r"><code>## Modification: Combining for loops and if/else statements
+z &lt;- c(2, 4, 6, 8, 10)
+set.seed(1)
+for(i in 1:length(z)) {
+  if(z[i] &gt;=6) {
+    print(&quot;yes&quot;)
+    } else {
+      print(&quot;no&quot;)
+        } 
+}</code></pre>
+<pre><code>## [1] &quot;no&quot;
+## [1] &quot;no&quot;
+## [1] &quot;yes&quot;
+## [1] &quot;yes&quot;
+## [1] &quot;yes&quot;</code></pre>
+<p>Conditions are always evaluated from left to right. For example, in the above code, if <code>z</code> were less than 3, the second test would not have been evaluated.</p>
+</div>
+</div>
+<div id="functions" class="section level1">
+<h1>Functions</h1>
+<p>Writing functions is a core step in going from an R user to a developer. Functions are normally used to encapsulate a sequence of expressions that need to be executed numerous times, perhaps under slightly different conditions.</p>
+<p>The writing of a function allows a developer to create an interface to the code, that is explicitly specified with a set of parameters. This interface provides an abstraction of the code to potential users. This abstraction simplifies the users’ lives because it relieves them from having to know every detail of how the code operates. In addition, the creation of an interface allows the developer to communicate to the user the aspects of the code that are important or are most relevant.</p>
+<div id="functions-in-r" class="section level2">
+<h2>Functions in R</h2>
+<p>Functions in R are “first class objects”, which means that they can be treated much like any other R object. Importantly,</p>
+<ul>
+<li>Functions can be passed as arguments to other functions. This is very handy for the various apply functions, like <code>lapply()</code> and <code>sapply()</code> that we will learn below.</li>
+<li>Functions can be nested, so that you can define a function inside of another function.</li>
+</ul>
+</div>
+<div id="your-first-function" class="section level2">
+<h2>Your first function</h2>
+<p>Functions are defined using the function() directive and are stored as R objects just like anything else. In particular, they are R objects of class “function”.</p>
+<p>Here’s a simple function that takes no arguments and does nothing.</p>
+<pre class="r"><code>f &lt;- function() {
+        ## This is an empty function
+}
+## Functions have their own class
+class(f)  </code></pre>
+<pre><code>## [1] &quot;function&quot;</code></pre>
+<pre class="r"><code>## Execute this function
+f()       </code></pre>
+<pre><code>## NULL</code></pre>
+<p>The next thing we can do is create a function that actually has a non-trivial function body.</p>
+<pre class="r"><code>f &lt;- function() {
+        cat(&quot;Hello, world!\n&quot;)
+}
+
+f()</code></pre>
+<pre><code>## Hello, world!</code></pre>
+<pre class="r"><code>## Modification: Using the print function to print hello
+f &lt;- function() {
+        print(&quot;Hello&quot;)
+}
+
+f()</code></pre>
+<pre><code>## [1] &quot;Hello&quot;</code></pre>
+<p>The last aspect of a basic function is the function arguments. These are the options that you can specify to the user that the user may explicity set. For this basic function, we can add an argument that determines how many times “Hello, world!” is printed to the console.</p>
+<pre class="r"><code>f &lt;- function(num) {
+  for(i in seq_len(num)) {
+    cat(&quot;Hello, world!\n&quot;)
+    }
+}
+
+f(3)</code></pre>
+<pre><code>## Hello, world!
+## Hello, world!
+## Hello, world!</code></pre>
+<pre class="r"><code>## Modification: perform the equation 2 * num + 1 each time the function is run with a value in the ()
+f &lt;- function(num) {
+  2*num +1
+}
+
+f(3)</code></pre>
+<pre><code>## [1] 7</code></pre>
+<p>Obviously, we could have just cut-and-pasted the <code>cat(&quot;Hello, world!\n&quot;)</code> code three times to achieve the same effect, but then we wouldn’t be programming, would we? Also, it would be un-neighborly of you to give your code to someone else and force them to cut-and-paste the code however many times the need to see “Hello, world!”.</p>
+<p>The next function prints the total number of characters printed to the console.</p>
+<pre class="r"><code>f &lt;- function(num) {
+        hello &lt;- &quot;Hello, world!\n&quot;
+       for(i in seq_len(num)) {
+               cat(hello)
+       }
+       chars &lt;- nchar(hello) * num
+       chars
+}
+meaningoflife &lt;- f(3)</code></pre>
+<pre><code>## Hello, world!
+## Hello, world!
+## Hello, world!</code></pre>
+<pre class="r"><code>print(meaningoflife)</code></pre>
+<pre><code>## [1] 42</code></pre>
+<pre class="r"><code>## Modification: change the value of hello
+f &lt;- function(num) {
+        hello &lt;- &quot;This sentence has 32 characters.&quot;
+       for(i in seq_len(num)) {
+               cat(hello)
+       }
+       chars &lt;- nchar(hello) * num
+       chars
+}
+f(1)</code></pre>
+<pre><code>## This sentence has 32 characters.</code></pre>
+<pre><code>## [1] 32</code></pre>
+<p>In the above function, we didn’t have to indicate anything special in order for the function to return the number of characters. In R, the return value of a function is always the very last expression that is evaluated. Because the <code>chars</code> variable is the last expression that is evaluated in this function, that becomes the return value of the function.</p>
+<p>Note that there is a <code>return()</code> function that can be used to return an explicity value from a function, but it is rarely used in R.</p>
+<p>Finally, in the above function, the user must specify the value of the argument <code>num</code>. If it is not specified by the user, R will throw an error.</p>
+<pre class="r"><code># f()</code></pre>
+<p>We can modify this behavior by setting a default value for the argument <code>num</code>. Any function argument can have a default value, if you wish to specify it. Sometimes, argument values are rarely modified (except in special cases) and it makes sense to set a default value for that argument. This relieves the user from having to specify the value of that argument every single time the function is called.</p>
+<p>Here, for example, we could set the default value for <code>num</code> to be 1, so that if the function is called without the <code>num</code> argument being explicitly specified, then it will print “Hello, world!” to the console once.</p>
+<pre class="r"><code>f &lt;- function(num = 1) {
+       hello &lt;- &quot;Hello, world!\n&quot;
+       for(i in seq_len(num)) {
+               cat(hello)
+       }
+       chars &lt;- nchar(hello) * num
+       chars
+}
+
+f()    ## Use default value for &#39;num&#39;</code></pre>
+<pre><code>## Hello, world!</code></pre>
+<pre><code>## [1] 14</code></pre>
+<pre class="r"><code>f(2)</code></pre>
+<pre><code>## Hello, world!
+## Hello, world!</code></pre>
+<pre><code>## [1] 28</code></pre>
+<pre class="r"><code>## Modification: set default to num = 2
+f &lt;- function(num = 2) {
+       hello &lt;- &quot;Hello, world!\n&quot;
+       for(i in seq_len(num)) {
+               cat(hello)
+       }
+       chars &lt;- nchar(hello) * num
+       chars
+}
+
+f()</code></pre>
+<pre><code>## Hello, world!
+## Hello, world!</code></pre>
+<pre><code>## [1] 28</code></pre>
+<p>Remember that the function still returns the number of characters printed to the console.</p>
+<p>At this point, we have written a function that</p>
+<ul>
+<li><p>has one formal argument named <code>num</code> with a default value of 1. The formal arguments are the arguments included in the function definition. The <code>formals()</code> function returns a list of all the formal arguments of a function</p></li>
+<li><p>prints the message “Hello, world!” to the console a number of times indicated by the argument <code>num</code></p></li>
+<li><p>returns the number of characters printed to the console</p></li>
+</ul>
+<p>Functions have named arguments which can optionally have default values. Because all function arguments have names, they can be specified using their name.</p>
+<pre class="r"><code>f(num = 2)</code></pre>
+<pre><code>## Hello, world!
+## Hello, world!</code></pre>
+<pre><code>## [1] 28</code></pre>
+</div>
+</div>
+<div id="looping-on-the-command-line-using-apply-family-in-r-base-or-purrr-in-tidyverse" class="section level1">
+<h1>Looping on the Command line using <code>apply</code> family in R base or <code>purrr</code> in Tidyverse</h1>
+<p>Writing <code>for</code> and <code>while</code> loops is useful when programming but not particularly easy when working interactively on the command line. The Apply family comprises: <code>apply()</code>, <code>lapply()</code>, <code>sapply()</code>, <code>vapply()</code>, <code>mapply()</code>, <code>rapply()</code>, and <code>tapply()</code>. The Family of Apply functions pertains to the R base package, and is populated with functions to manipulate slices of data from matrices, arrays, lists and data frames in a repetitive way. In Tidyverse this functionality is covered by purrr. The <code>apply()</code> and <code>purrr()</code> functions in R are designed to avoid explicit use of loop constructs. They act on an input list, matrix or array, and apply a named function with one or several optional arguments.</p>
+</div>
+<div id="exercises" class="section level1">
+<h1>Exercises</h1>
+<p>Make a Rmd file with the above examples. Explore the examples by modifying each example is some way. Knit and turn in your html file. <strong>Each example is modified in the same code chunk above.</strong></p>
+</div>
 
 
 

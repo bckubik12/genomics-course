@@ -1,0 +1,407 @@
+---
+title: 'Lab 9 EXTRA- Programming in R: Control Structures and Functions'
+author: "Briana Kubik"
+date: "10/28/2020"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Control Structures
+
+A main benefit of coding is being able to create your own programs and functions. Control structures allow you to control the flow of execution of a series of expressions. Common control structures are:
+
+* `if` and `else` to test a condition and act on it
+* `for` to execute a loop a fixed number of times
+* `while` to execute a loop while a condition is TRUE for nonfixed number of times
+
+## Conditional statements ith `if-else`
+
+The `if`-`else` control structure is the most commonly used as it allows you to test a condition and apply some other action on it depending on if it is TRUE or FALSE.
+
+You can use just the `if` statement:
+
+```{r eval = FALSE}
+if(<condition>) {
+        ## do something
+} 
+## Continue with rest of code
+```
+
+You can also add an `else` statement to perform an action if the condition is FALSE:
+
+```{r eval = FALSE}
+if(<condition>) {
+        ## do something
+} 
+else {
+        ## do something else
+}
+```
+
+You can also apply more than one condition in the same string of code:
+
+```{r eval = FALSE}
+if(<condition1>) {
+        ## do something
+} else if(<condition2>)  {
+        ## do something different
+} else {
+        ## do something different
+}
+```
+
+Here is an example for an if/else statement:
+
+```{r}
+## Generate a uniform random number
+x <- runif(1, 0, 10)  
+if(x > 3) {
+        y <- 10
+} else {
+        y <- 0
+}
+
+## Modification: the value of y depends on whether x is 3, 4, 5, or 6
+x <- runif(1, 0, 10)  
+if(x %in% 3:6) {
+        y <- 10
+} else {
+        y <- 0
+}
+```
+
+The value of `y` is set depending on the condition in the `if()` statement.
+
+## Important Operators
+
+#### Comparison operators
+ 
+* `==` equal
+* `!=` not equal
+* `>` greater than
+* `>=` greater than or equal
+* `<` less than 
+* `<=` less than or equal
+
+#### Logical operators
+
+* `&` and
+* `|` or
+* `!` not
+
+## `for` loops
+
+`for` loops are the main loops used in R for data analyses and such. They take a iterator variable and assign it a successive value from a sequence or vector. For loops are most commonly used for iterating over the elements of an object (list, vector, etc.). 
+
+```{r}
+for(i in 1:10) {
+  print(i)
+}
+
+## Modification: For numbers 1:10 print i-1
+for(i in 1:10) {
+  print(i-1)
+}
+```
+
+This loop takes the i variable and in each iteration of the loop gives it values 1, 2, 3, …, 10, executes the code within the curly braces, and then the loop exits.
+
+The following three loops all have the same behavior.
+
+```{r}
+x <- c("a", "b", "c", "d")
+for(i in 1:4) {
+        ## Print out each element of 'x'
+        print(x[i])  
+}
+
+## Modification: Multiply each value of x by 2 and print to console
+x <- c(1, 2, 3, 4)
+for(i in 1:4) {
+        x[i] = x[i] * 2
+        print(x[i])  
+}
+```
+
+The `seq_along()` function is commonly used in conjunction with for loops in order to generate an integer sequence based on the length of an object (in this case, the object `x`).
+
+```{r}
+## Generate a sequence based on length of 'x'
+x <- c("a", "b", "c", "d")
+for(i in seq_along(x)) {   
+        print(x[i])
+}
+
+## Modification: Same as above with seq_along()
+x <- c(1, 2, 3, 4)
+for(i in seq_along(x)) {
+        x[i] = x[i] * 2
+        print(x[i])  
+}
+```
+
+It is not necessary to use an index-type variable.
+
+```{r}
+x <- c("a", "b", "c", "d")
+for(letter in x) {
+        print(letter)
+}
+
+## Modification: Change the index variable
+for(let in x) {
+        print(let)
+}
+```
+
+For one line loops, the curly braces are not strictly necessary.
+
+```{r}
+for(i in 1:4) print(x[i])
+
+## Modification: add 1 to each value of x and print to console
+x <- c(1, 2, 3, 4)
+for(i in 1:4) print(x[i] + 1)
+```
+
+However, I like to use curly braces even for one-line loops, because that way if you decide to expand the loop to multiple lines, you won’t be burned because you forgot to add curly braces (and you will be burned by this).
+
+## Nested `for` loops
+
+`for` loops can be nested inside each other:
+
+```{r}
+x <- matrix(1:6, 2, 3)
+for(i in seq_len(nrow(x))) {
+        for(j in seq_len(ncol(x))) {
+                print(x[i, j])
+        }   
+}
+
+## Modification: multiple each value in the matrix by 2 and print to console
+x <- matrix(1:6, 2, 3)
+for(i in 1:nrow(x)) {
+        for(j in 1:ncol(x)) {
+                print(x[i, j] * 2)
+        }   
+}
+```
+
+Nested loops are commonly needed for multidimensional or hierarchical data structures (e.g. matrices, lists). Be careful with nesting though. Nesting beyond 2 to 3 levels often makes it difficult to read/understand the code. If you find yourself in need of a large number of nested loops, you may want to break up the loops by using functions (discussed later).
+
+## `while` loops
+
+While loops begin by testing a condition. If it is true, then they execute the loop body. Once the loop body is executed, the condition is tested again, and so forth, until the condition is false, after which the loop exits.
+
+```{r}
+count <- 0
+while(count < 10) {
+        print(count)
+        count <- count + 1
+}
+
+## Modification: print the value of count to the console until it is less than 1
+count <- 50
+while(count > 1) {
+        print(count)
+        count <- count/2
+}
+```
+
+While loops can potentially result in infinite loops if not written properly. Use with care!
+
+Sometimes there will be more than one condition in the test.
+
+```{r}
+z <- 5
+set.seed(1)
+while(z >= 3 && z <= 10) {
+        coin <- rbinom(1, 1, 0.5)
+        
+        if(coin == 1) {  ## random walk
+                z <- z + 1
+        } else {
+                z <- z - 1
+        } 
+}
+print(z)
+
+## Modification: Combining for loops and if/else statements
+z <- c(2, 4, 6, 8, 10)
+set.seed(1)
+for(i in 1:length(z)) {
+  if(z[i] >=6) {
+    print("yes")
+    } else {
+      print("no")
+        } 
+}
+```
+
+Conditions are always evaluated from left to right. For example, in the above code, if `z` were less than 3, the second test would not have been evaluated.
+
+# Functions
+
+Writing functions is a core step in going from an R user to a developer. Functions are normally used to encapsulate a sequence of expressions that need to be executed numerous times, perhaps under slightly different conditions.
+
+The writing of a function allows a developer to create an interface to the code, that is explicitly specified with a set of parameters. This interface provides an abstraction of the code to potential users. This abstraction simplifies the users’ lives because it relieves them from having to know every detail of how the code operates. In addition, the creation of an interface allows the developer to communicate to the user the aspects of the code that are important or are most relevant.
+
+## Functions in R
+
+Functions in R are “first class objects”, which means that they can be treated much like any other R object. Importantly,
+
+* Functions can be passed as arguments to other functions. This is very handy for the various apply functions, like `lapply()` and `sapply()` that we will learn below.
+* Functions can be nested, so that you can define a function inside of another function.
+
+## Your first function
+
+Functions are defined using the function() directive and are stored as R objects just like anything else. In particular, they are R objects of class “function”.
+
+Here’s a simple function that takes no arguments and does nothing.
+
+```{r}
+f <- function() {
+        ## This is an empty function
+}
+## Functions have their own class
+class(f)  
+
+## Execute this function
+f()       
+```
+
+The next thing we can do is create a function that actually has a non-trivial function body.
+
+```{r}
+f <- function() {
+        cat("Hello, world!\n")
+}
+
+f()
+
+## Modification: Using the print function to print hello
+f <- function() {
+        print("Hello")
+}
+
+f()
+```
+
+The last aspect of a basic function is the function arguments. These are the options that you can specify to the user that the user may explicity set. For this basic function, we can add an argument that determines how many times “Hello, world!” is printed to the console.
+
+```{r}
+f <- function(num) {
+  for(i in seq_len(num)) {
+    cat("Hello, world!\n")
+    }
+}
+
+f(3)
+
+## Modification: perform the equation 2 * num + 1 each time the function is run with a value in the ()
+f <- function(num) {
+  2*num +1
+}
+
+f(3)
+```
+
+Obviously, we could have just cut-and-pasted the `cat("Hello, world!\n")` code three times to achieve the  same effect, but then we wouldn’t be programming, would we? Also, it would be un-neighborly of you to give your code to someone else and force them to cut-and-paste the code however many times the need to see “Hello, world!”.
+
+The next function prints the total number of characters printed to the console.
+
+```{r}
+f <- function(num) {
+        hello <- "Hello, world!\n"
+       for(i in seq_len(num)) {
+               cat(hello)
+       }
+       chars <- nchar(hello) * num
+       chars
+}
+meaningoflife <- f(3)
+
+print(meaningoflife)
+
+## Modification: change the value of hello
+f <- function(num) {
+        hello <- "This sentence has 32 characters."
+       for(i in seq_len(num)) {
+               cat(hello)
+       }
+       chars <- nchar(hello) * num
+       chars
+}
+f(1)
+```
+
+In the above function, we didn’t have to indicate anything special in order for the function to return the number of characters. In R, the return value of a function is always the very last expression that is evaluated. Because the `chars` variable is the last expression that is evaluated in this function, that becomes the return value of the function.
+
+Note that there is a `return()` function that can be used to return an explicity value from a function, but it is rarely used in R.
+
+Finally, in the above function, the user must specify the value of the argument `num`. If it is not specified by the user, R will throw an error.
+
+```{r}
+# f()
+```
+
+We can modify this behavior by setting a default value for the argument `num`. Any function argument can have a default value, if you wish to specify it. Sometimes, argument values are rarely modified (except in special cases) and it makes sense to set a default value for that argument. This relieves the user from having to specify the value of that argument every single time the function is called.
+
+Here, for example, we could set the default value for `num` to be 1, so that if the function is called without the `num` argument being explicitly specified, then it will print “Hello, world!” to the console once.
+
+```{r}
+f <- function(num = 1) {
+       hello <- "Hello, world!\n"
+       for(i in seq_len(num)) {
+               cat(hello)
+       }
+       chars <- nchar(hello) * num
+       chars
+}
+
+f()    ## Use default value for 'num'
+
+f(2)
+
+## Modification: set default to num = 2
+f <- function(num = 2) {
+       hello <- "Hello, world!\n"
+       for(i in seq_len(num)) {
+               cat(hello)
+       }
+       chars <- nchar(hello) * num
+       chars
+}
+
+f()
+```
+
+Remember that the function still returns the number of characters printed to the console.
+
+At this point, we have written a function that
+
+* has one formal argument named `num` with a default value of 1. The formal arguments are the arguments included in the function definition. The `formals()` function returns a list of all the formal arguments of a function
+
+* prints the message “Hello, world!” to the console a number of times indicated by the argument `num`
+
+* returns the number of characters printed to the console
+
+Functions have named arguments which can optionally have default values. Because all function arguments have names, they can be specified using their name.
+
+```{r}
+f(num = 2)
+```
+
+# Looping on the Command line using `apply` family in R base or `purrr` in Tidyverse
+
+Writing `for` and `while` loops is useful when programming but not particularly easy when working interactively on the command line. The Apply family comprises: `apply()`, `lapply()`, `sapply()`, `vapply()`, `mapply()`, `rapply()`, and `tapply()`. The Family of Apply functions pertains to the R base package, and is populated with functions to manipulate slices of data from matrices, arrays, lists and data frames in a repetitive way. In Tidyverse this functionality is covered by purrr. The `apply()` and `purrr()` functions in R are designed to avoid explicit use of loop constructs. They act on an input list, matrix or array, and apply a named function with one or several optional arguments.
+
+# Exercises
+
+Make a Rmd file with the above examples. Explore the examples by modifying each example is some way. Knit and turn in your html file. **Each example is modified in the same code chunk above.**
+
