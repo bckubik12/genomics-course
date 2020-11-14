@@ -36,4 +36,6 @@ knitr::opts_chunk$set(echo = TRUE)
 
 [Lab9_EXTRA- Programming in R: Control Structures and Functions](Lab9_EXTRA_BrianaKubik.html)
 
-[Lab 10- Population genomics based on high throughput sequencing (HTS)](Lab10_BrianaKubik.html)
+[Lab10- Population genomics based on high throughput sequencing (HTS)](Lab10_BrianaKubik.html)
+
+[Lab11_EXTRA- Microbiome Analysis using phyloseq](Lab11_EXTRA_BrianaKubik.html)
