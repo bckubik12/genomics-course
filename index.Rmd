@@ -2,13 +2,15 @@
 title: "Index"
 author: "Briana Kubik"
 date: "8/31/2020"
-output: html_document
+output: 
+  prettydoc::html_pretty:
+    theme: cayman
+    highlight: github
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-
 
 [Lab1- Intro to R and reproducible research](Lab1_BrianaKubik.html)
 
@@ -38,4 +40,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 [Lab10- Population genomics based on high throughput sequencing (HTS)](Lab10_BrianaKubik.html)
 
+[Lab11- Microbiome Analysis using dada2 and phyloseq](Lab11_BrianaKubik.html)
+
 [Lab11_EXTRA- Microbiome Analysis using phyloseq](Lab11_EXTRA_BrianaKubik.html)
+
+[Lab12- Network Analysis using Cytoscape and RCy3](Lab12_BrianaKubik.html)
