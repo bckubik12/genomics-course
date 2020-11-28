@@ -842,15 +842,15 @@ chrom &lt;- create.chromR(name=&quot;Supercontig&quot;, vcf=vcf, seq=dna, ann=gf
 <p>Creation and processing of a <em>chromR</em> object has been divided into separate tasks. Creation loads the data into the <em>chromR</em> object and should typically only be required once. Processing the <em>chromR</em> object generates summaries of the data. Some of these summaries will need to be updated as the <em>chromR</em> object is updated. For example, if the size of the sliding window used to summarize variant density and GC content is changed the <em>chromR</em> object will need to be processed to update this information.</p>
 <pre class="r"><code>chrom &lt;- proc.chromR(chrom, verbose = TRUE)</code></pre>
 <pre><code>## Nucleotide regions complete.</code></pre>
-<pre><code>##   elapsed time:  0.41</code></pre>
+<pre><code>##   elapsed time:  0.36</code></pre>
 <pre><code>## N regions complete.</code></pre>
-<pre><code>##   elapsed time:  0.29</code></pre>
+<pre><code>##   elapsed time:  0.23</code></pre>
 <pre><code>## Population summary complete.</code></pre>
-<pre><code>##   elapsed time:  0.75</code></pre>
+<pre><code>##   elapsed time:  0.62</code></pre>
 <pre><code>## window_init complete.</code></pre>
 <pre><code>##   elapsed time:  0</code></pre>
 <pre><code>## windowize_fasta complete.</code></pre>
-<pre><code>##   elapsed time:  0.41</code></pre>
+<pre><code>##   elapsed time:  0.25</code></pre>
 <pre><code>## windowize_annotations complete.</code></pre>
 <pre><code>##   elapsed time:  0.01</code></pre>
 <pre><code>## windowize_variants complete.</code></pre>
