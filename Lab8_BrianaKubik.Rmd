@@ -1,0 +1,304 @@
+---
+title: "Lab 8- Sequence Alignment, Phylogenetic Analysis and Tree Visualization"
+author: "Briana Kubik"
+date: "11/27/2020"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Sequence alignment background
+
+Sequence Alignment is one of the most fundamental operations of bioinformatics. Sequence alignments are used to decide if genes or proteins are related functionally, structurally and evolutionarily. It is also at the core of sequence search methods such as BLAST.
+
+There are two principal methods of pair-wise sequence alignment
+
+* Dot matrix analysis.
+* The dynamic programming (or DP) algorithm.
+* Word or k-tuple methods (such as those used in BLAST and FASTA - which we will discuss later)
+
+## Dot matrix analysis
+
+This method involves constructing a matrix with one of the sequences to be compared running horizontally across the bottom, and the other running vertically along the left-hand side. Each entry of the matrix is a measure of similarity of those two residues on the horizontal and vertical sequence. The simplest scoring system, distinguishes only between identical (dots) and non-identical (blank) residues.
+
+The dot plot displays graphically any possible sequence alignments as diagonals on the matrix. Insertions, deletions, direct repeats and inverted repeats can be visually detected on a dot plot. Dot plot can also detect regions of RNA that are self-complementary and thus might form secondary structure.
+
+![This dot plot represents an alignment of two different strains of Helicobacter pylori. Forward matches are shown in red, while reverse matches are shown in green. This alignment clearly shows a major inversion event centered around the origin of replication.](C:\Users\bck16\OneDrive\Documents\genomics-course\\images\Dot_Plot.png)
+
+## The dynamic programming algorithm
+
+The dynamic programming algorithm is at the heart of many bioinformatics programs including BLAST (sequence searching), FASTA (sequence searching), CLUSTALW (multiple sequence alignmnet), HMMER (profile searching), GENSCAN (gene finding), MFOLD (RNA folding), and PHYLIP (phylogenetic analysis). Dynamic programing was first used for global alignment of protein sequences by Needleman and Wunnsch (1970) and to find local alignments by Smith and Waterson (1981).
+
+<center>
+
+![](C:\Users\bck16\OneDrive\Documents\genomics-course\images\BPs.png)
+</center>
+
+## Subsitution penalties differ for particular nucleotides or amino acids
+
+Amino acids are put together into proteins based on their three nucleotide codons, and most mutational events usually only change one nucleotide at time. For example, starting with the Alanine codon GCU and looking at all possible changes on a http://en.wikipedia.org/wiki/Genetic_code#RNA_codon_table.
+
+<center>
+
+![](C:\Users\bck16\OneDrive\Documents\genomics-course\images\A.png)
+
+</center>
+
+Thus, from the Alanine codon GCU with a single substitution we can only get to 6 of the 19 other amino acids and 33% of the changes are going to result in keeping Alanine at the site in the protein, the other six amino acids would result 11% of the time. Even if we look at all codons for Alanine, there are still 12 amino acids that can not be made by single substitution. Thus, the frequency of changing Alanine to another amino acid by a single nucleotide change would be
+
+<center>
+
+![](C:\Users\bck16\OneDrive\Documents\genomics-course\images\B.png)
+
+</center>
+
+## Origin of protein substitution matrices and bioinformatics
+
+Protein substitution matrices were first developed by Margaret Dayhoff, one of the founders of the field of bioinformatics. She was particularly interested in the possibility of deducing the evolutionary relationships of organisms from protein sequences. Toward these ends she collected all the known protein sequences and, as a service to the scientific community, made them available to others in 1965 in a small book, the first Atlas of Protein Sequence and Structure.
+
+Ref: http://en.wikipedia.org/wiki/Margaret_Oakley_Dayhoff
+
+From these sequences, she and her coworkers developed a model of protein evolution which resulted in the development of a set of widely used substitution matrices. These are frequently called Dayhoff or PAM (Percent Accepted Mutation) matrices and similar matrices are used in many areas of bioinformatics including: sequence similarity searches (e.g. BLAST), multiple sequence alignment tools (e.g ClustalW), phylogenetics and identifying functional regions of proteins.
+
+## Natural selection governs which amino acid changes are observed
+
+
+Just like mutation mucks with the frequency matrix so does Natural Selection. Changes that occur between amino acids that have different biochemical properties are likely to affect the function of the protein. Therefore, a substitution is more likely to occur between amino acids with similar biochemical properties. In the above example with the Alanine codon a substitution that yields an amino acid change would result in mostly changes to other neutral amino acids, whereas the frequency of change to Aspartic Acid would probably be much lower. Amazingly, the genetic code has evolved to minimize changes between amino acids with different biochemical properties.
+
+```{r eval = FALSE}
+Amino Acid          Side chain polarity Side chain acidity or basicity
+ Alanine              nonpolar            neutral
+ Arginine             polar                  strongly basic
+ Asparagine           polar                  neutral
+ Aspartic acid        polar                  acidic
+ Cysteine             polar                  neutral
+ Glutamic acid        polar                  acidic
+ Glutamine            polar                  neutral
+ Glycine              nonpolar               neutral
+ Histidine            polar                  weakly basic
+ Isoleucine           nonpolar               neutral
+ Leucine              nonpolar               neutral
+ Lysine               polar                  basic
+ Methionine           nonpolar               neutral
+ Phenylalanine        nonpolar               neutral
+ Proline              nonpolar               neutral
+ Serine               polar                  neutral
+ Threonine            polar                  neutral
+ Tryptophan           nonpolar               neutral
+ Tyrosine             polar                  neutral
+ Valine               nonpolar               neutral
+```
+
+
+## Accounting for multiple substitutions
+
+As time goes on and sequence divergence gets larger it gets harder to account for multiple substitutions at the same amino acid position. PAM protein matrices are based on global alignments of closely related proteins. However, sequence changes over long evolutionary time scales are not well approximated by compounding small changes that occur over short time scales. For comparing more distantly related sequence other types of matrices are used. One of the most common is the The BLOSUM (BLOck SUbstitution Matrix) series of matrices created by Steve Henikoff and colleagues. Both the PAM and BLOSUM are not expressed as transformation frequencies but the probabilities of transformation are expressed by log-odds scores as shown below for a BLOSUM62 matrix.
+
+<center>
+
+![](C:\Users\bck16\OneDrive\Documents\genomics-course\images\D.png)
+
+</center>
+
+Ref: http://en.wikipedia.org/wiki/Substitution_matrix
+
+# Multiple sequence alignment
+
+Why is multiple sequence alignment difficult?
+
+If sequences are all the same length, alignment is trivial:
+
+```{r eval = FALSE}
+    KNMITGAAQMDGAILVVAATDGPMPQTREHVLLARQVEVP
+    KNMITGAAQMDGAILVVSATDGAMPQTKEHILLARQVGVP
+    KNMITGAAQMDGAILVVSATDGAMPQTKEHILLARQVGVP
+    KNMITGAAQMDGAILVVSAADGPMPQTREHILLARQVGVP
+```
+
+This sequence alignment is unambiguous because there is no length variation among the sequences. No indels are needed to make the alignment, and the ungapped sequences can simply be arranged together. However, if the sequenes are of various lengths, problem is more complex, potentially very complex:
+
+```{r eval = FALSE}
+    RGSALKAVEAPNDPNHEA......YKPIQELLDAMDN.....YIPDPQRDVDKPFL
+    RGSALKALEGDAAYIEKVR..........ELMQAVDD.....NIPTPEREIDKPFL
+    RGSALKALE.....IEKVR..........ELMQAGDAAYVDDNIPTPEREIDKPFL
+    RGSALLALEEMHKNPKTKRGENEWVDKIWELLDAIDE.....YIPTPVRDVDKPFL
+    RGSALLALEQMHRNPKTRRGENEWVDKIWELLDAIDE.....YIPTPVRDVDKPFL
+    KGSALQALEALQANPKTARGEDKWVDRIWELLDAVDS.....YIPTPERATDKTFL
+    RGTARNALESPSKDIN....APEY.KCILELMNAVDE.....YIPTPQRAVDQPFL
+    KGSALQALE....NAE....DEEKTKCIWELLQAMDD.....YIPAPERDIDKPFL
+    KGSAFGAMS....NPE....DPESTKCVKELLESMDN.....YFDLPERDIDKPFL
+    RGSAFAAMS....KPD....DPAATKCLDELLDTMDK.....YFVIPERALDKPFL
+```
+
+In many cases the best position to place an indel is ambiguous. Ideally, one would know the phylogeny for the sequences; this would help infer the sequence of indels. Unfortunately one normally needs a multiple sequence alignment to make inferences about how the sequences are related. Most alignment algorithms make a quick approximation of phylogeny, and then base alignments on these. Sound circular? You are right and this is a challenging problem that is at the forefront of research in phylogenetics…the joint estimation of the alignment and phylogeny. For this class we will stick to the traditional method of first aligning sequences followed by phylogenetic analysis.
+
+Progressive alignment methods are efficient enough to implement on a large scale for many (100s to 1000s) sequences. Progressive alignment services are commonly available on publicly accessible web servers so users need not locally install the applications of interest. The most popular progressive alignment method has been the Clustal family Different portals or implementations can vary in user interface and make different parameters accessible to the user. Clustal Omega is used extensively for phylogenetic tree construction.
+
+The basic steps in Clustal are:
+
+1. Calculate all possible pairwise alignments, record the score for each pair
+2. Calculate a guide tree based on the pairwise distances (algorithm: Neighbor Joining)
+3. Find the two most closely related sequences
+4. Align these sequences (algorithm: Smith-Waterman).
+    a. Calculate a consensus of this alignment
+    b. Replace the two sequences with the consensus
+    c. Find the two next-most closely related sequences (one of these could be a previously determined consensus sequence).
+    d. Iterate until all sequences have been aligned
+5. Expand the consensus sequences with the (gapped) original sequences
+6. Report the multiple sequence alignment
+
+## Software for sequence alignment
+
+There are many tools available for sequence alignment. The common tools are hosting at the European Bioinformatics Institute.
+
+* [Pairwise sequence alignment](https://www.ebi.ac.uk/Tools/psa/)
+* [Multiple sequence alignment](https://www.ebi.ac.uk/Tools/msa/)
+
+The most commonly used are Clustal, Muscle and MAFFT. MAFFT is commonly implemented for working with large data sets and where speed is important (e.g. web servers)
+
+# Phylogenetic analysis
+
+From a practical perspective, phylogenetic analysis is broken up into methods related to tree building and tree visualization.
+
+## Phylogenetic analysis example dataset
+
+Carl Woese sequenced isolated and sequenced ribosomal RNA to discover a new domain of life, the Archaea. The method he used for directly sequencing RNA was very laborious as shown in the segment of Intimate Strangers: The Puzzle". His discovery was dependent on using phylogenetic methods to determine the relationship of his microbial sequence to other sequences in the database. Since his discovery, progress sequencing specfic genes from genomic DNA has greatly simplified the process of understanding microbial phylogenies. In this project you will be given a DNA sequence, then construct a multiple sequence alignment and do a phylogenetic analysis to show the relationships among the taxa represented by the DNA sequences.
+
+I have assembled a core group DNA sequences of small subunit ribosomal gene from our national DNA database Genbank to provide an example on the Moodle site - `Tree_of_Life_Core_Sequences.txt`. Download this to your computer. The files contains data for the following species.
+
+* Thermoplasma volcanium
+* Halalkalicoccus jeotgali
+* Candidatus Korarchaeum cryptofilum
+* Nanoarchaeum equitans
+* Chlorobium chlorochromatii
+* Burkholderia cenocepacia
+* Rhizobium leguminosarum
+* Escherichia coli
+* Archaeoglobus fulgidus
+* Methanocaldococcus jannaschii
+* Pyrococcus abyssi
+* Oryza sativa nuclear
+* Oryza sativa mitochondrion
+* Oryza sativa chloroplast
+* Saccharomyces cerevisiae nuclear
+* Homo sapies nuclear
+* Drosophila yakuba nuclear
+* Amphidinium carterae nuclear
+* Thermotoga lettingae
+* Prochlorococcus marinus
+* Trypanosoma cruzi
+
+If you need to know more about an organism you can check out the NCBI genome project site (e.g. [Nanoarchaeum equitans genome project site](https://www.ncbi.nlm.nih.gov/genome?term=txid160232%5Borgn%5D)) or Wikipedia for what is usually a good summary [Nanoarchaeum equitans](https://en.wikipedia.org/wiki/Nanoarchaeum_equitans). Next download the file `Tree_of_Life_Core_Sequences.txt`.
+
+## NGPhylogeny.fr - A quick and easy working flow including multiple sequence alignment, phylogenetic analysis and tree visualization
+
+This web server is great place to learn the basic workflow for phylogenetic analysis and I use it on occasion when I just need a quick see of the relationships among a small set of sequences. Doing a phylogenetic analysis involves (1) assembling a group of sequences to evaluate, (2) aligning the sequences so that a distance can be calculate between the sequences, (3) determining the relationships among the sequences, and (4) visualizing the relationships. Step 1 was accomplished above by getting representative archaeal, bacterial and eukaryotic sequences from GenBank. Steps 2-4 will be done on web server that has been set up to run these steps at the same time. Go to the site for [Robust Phylogenetic Analysis For The Non-Specialist](https://ngphylogeny.fr/).Scroll down and under Phylogenetic Analysis select “One Click”. Upload or paste in your DNA sequences from the file in Moodle. Then click submit. This will start the analysis process. The numbers of the tree represent statistical support for the relationship. The more robust the relationship the closer the value will be to 1. The scale at the bottom represents sequence distance (e.g. 0.2 is 20%).
+
+Save your tree as a png file to your computer. This will allow you to upload into your .Rmd file. Also save your tree as a newick file for later use.
+
+There are other one stop shops for phylogenetic analysis including [NCBI’s Genome Workbench](https://www.ncbi.nlm.nih.gov/tools/gbench/), [MEGA](https://megasoftware.net/) and the commercial software [Genious](https://www.geneious.com/). Because working with medium or large (hundreds to thousands) sequence data sets requires greater computational resources, it is often most praticial to run multiple sequence alignment and phylogenetic analyses on high performance computers. Using a Unix-based HPC also allows for access to a greater variety and the newest phylogenetic methods.
+
+## Phylogenetic Analysis (tree building) on CIPRES
+
+The CIPRES Science Gateway is a public resource for inference of large phylogenetic trees. It is designed to provide researchers with access to large computational resources of the NSF TeraGrid through a simple browser interface. The CIPRES Science Gateway The CIPRES Portal V 1.0 permitted users to run popular sequence alignment tools ClustalW, Muscle and MAFFT and the community tree inference tools FasttreeML, GARLI, RAxML, PAUP, and MrBayes.
+
+## Phylogenetic tree visualization
+
+The tree visualizations on NGPhylogeny.fr are ok for some purposes, but often for publications more tree editing and visualization features are needed. There are a number of packages available to bring trees to like including [Figtree](http://tree.bio.ed.ac.uk/software/figtree/), [Dendroscope](https://www.wsi.uni-tuebingen.de/lehrstuehle/algorithms-in-bioinformatics/software/dendroscope/) and [iTOL](https://itol.embl.de/). [ETE Toolkit](http://etetoolkit.org/) is a framework for analyzing and visualizing trees in Python. For a more complete list see [Wikipedia](https://en.wikipedia.org/wiki/List_of_phylogenetic_tree_visualization_software).
+
+Historically most phylogenetic analysis and tree visualization has been done with independent software tools. There has been a growing move towards using R for phylogenetic analyses. The package [ape: Analysis of Phylogenetics and Evolution](https://rdrr.io/cran/ape/) can access popular multiple sequence alignment and phylogenetic analysis methods. [ggtree](https://bioconductor.org/packages/release/bioc/html/ggtree.html) extends the ‘ggplot2’ for visualization and annotation of phylogenetic trees with their annotation data. The author, Guangchuang Yu, has recently published an R book [Data Integration, Manipulation and Visualization of Phylogenetic Trees](https://yulab-smu.top/treedata-book/).
+
+# Exercises
+
+1. **Use NGPhylogeny.fr to analysis the set of rRNA sequence provided. Describe the methods and put the .png file from your analysis into your Lab 8 .Rmd file.**
+<br><br/> Methods:(1) Assemble a group of sequences (This was done for us and is provided in the file `Tree_of_Life_Core_Sequences.txt`), (2) Align sequences, (3) Determine the relationship between sequences, and (4) Visualize sequences.
+
+<center>
+
+![](C:\Users\bck16\OneDrive\Documents\genomics-course\images\mytree.png)
+
+</center>
+
+2. **Align and do phylogenetic analysis off the sequences in CIPRES using MAFFT and FastTreeMP. [Here is my step by step tutorial on using CIPRES](https://jeffreyblanchard.github.io/EvoGeno/EvoGeno_CIPRES_tutorial.html). You will need to click on Parameter Set and Save even if you don’t change the parameters. Download the fastree_result.tre to your computer.**
+
+<ins> Abbreviated CIPRES tutorial: </ins>
+
+* Log into CIPRES and create a new folder.
+
+* Go into the Data folder. Upload your `Tree_of_Life_Cores_sequences.fna` file.
+
+* Running MAFFT
+    + Click on the Tasks Folder. Create New Task. Select the input file (`Tree_of_Life_Cores_sequences.fna`). Select the tool (MAFFT). Select the parameter set. Show Advanced Parameters and then Save Parameters.
+    + Save and Run Task. You will get an email when the Task (Job) is finished.
+    + When the task is finished, click on the Label `TOL_mafft`.
+    + Click on Output `View`.
+    + Click on View, Rename and Save to Current Folder (This file will be saved in your data folder).
+
+* Running FasttreeMP
+    + Create a new task. Use for input the TOL_mafft_ouput file.
+    + Save and Run Task. When the job is finished as above with the MAFFT results click on the Label `TOL_fastree` and then Output `View` and then fastree_result.tre `View`. Rename and Save to Current Folder
+    
+* Downloading your files to use in MSA and Tree Visualization applications
+    + Go to you Data folder. Click on the link for Data ID link for TOL_output.mafft Save to your local computer in your GitHub directory for the class. You can upload and view the sequence alignment in several MSA viewers including [Mview](https://www.ebi.ac.uk/Tools/msa/mview/).
+    + Now download you TOL_fastree_result.tre file. Save to your local computer in your GitHub directory for the class. This is the tree file for using in `ggtree` and other tree visualization programs. This is a newick tree file. There is no need to, but you can open it up on your computer in text editors such as Notepad (Windows) and TextEdit (OSX).
+
+3. **Go through the tutorial on [Visualizing and Annotating Phylogenetic Trees with R+ggtree](https://jeffreyblanchard.github.io/EvoGeno/ggtree_tutorial.html) adding the steps to your .Rmd file.**
+<br><br/> This file can be found [here](Lab8_ggtree_BrianaKubik.html).
+
+4. **Upload your tree file from the FastTreeMP output on CIPRES into R using `treeio`. Using `ggtree` to make the tree images, coloring the tree according to the domains of life.**
+
+```{r}
+library(tidyverse)
+library(ggtree)
+library(treeio)
+library(ggimage)
+
+tree <- read.tree("data/fastree_results.tre")
+tree
+
+ggtree(tree, layout = "circular", branch.length = "none") +
+  xlim(0,36) +
+  geom_nodelab() +
+  geom_tiplab(hjust=-.1, size = 3, align = TRUE) +
+  geom_highlight(node = 22, fill = "green")+
+  geom_hilight(node = 30, fill="gold") +
+  geom_highlight(node = 25, fill = "purple")
+```
+
+If you think the tree is not fitting in the plot space you can modify the `xlim`: 
+
+```{r}
+# Add to your 
+#ggtree(tree) +
+#  xlim(0,2) # This worked from my rectangular trees
+#  xlim(0.36) # This worked for my circular trees
+```
+
+To show the bootstrap values
+
+```{r}
+#ggtree(tree) +  
+#  geom_nodelab()
+```
+
+To change text size and position
+
+```{r}
+#ggtree(tree) +
+#  geom_tiplab(hjust=-.1, size = 3)
+```
+
+To change the size of the highlighted clade you can use `extend`:
+
+```{r}
+#ggtree(tree) +
+#  geom_hilight(node=34, fill="gold", extend = 0.5) 
+```
+
+You can order the layers when highlighting for certain effects
+
+![](C:\Users\bck16\OneDrive\Documents\genomics-course\images\Tree.png)

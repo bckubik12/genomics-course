@@ -34,6 +34,10 @@ knitr::opts_chunk$set(echo = TRUE)
 
 [Lab7- RScript](Lab7_RScript_BrianaKubik.html)
 
+[Lab8- Sequence Alignment, Phylogenetic Analysis and Tree Visualization](Lab8_BrianaKubik.html)
+
+[Lab8_ggtree- ggtree tutorial](Lab8_ggtree_BrianaKubik.html)
+
 [Lab9- Programming in R: Regular Expressions](Lab9A_BrianaKubik.html)
 
 [Lab9_EXTRA- Programming in R: Control Structures and Functions](Lab9_EXTRA_BrianaKubik.html)
